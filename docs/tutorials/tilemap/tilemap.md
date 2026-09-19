@@ -1,11 +1,3 @@
-<!--
-?? DEPRECATED � ECS Migration in Progress
-
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
-
-See ROADMAP.md for the current migration track.
--->
 # Tilemap System
 
 Tilemaps are runtime data components used to build 2D levels. Tiles are painted programmatically through the `Tilemap` API.
@@ -13,32 +5,37 @@ Tilemaps are runtime data components used to build 2D levels. Tiles are painted 
 ## Runtime Composition
 
 ```rust
-use runa_engine::runa_asset::load_image;
-use runa_engine::runa_core::{
-    components::{Tilemap, TilemapLayer, TilemapRenderer},
-    glam::USizeVec2,
-    ocs::Object,
-};
+use runa_engine::asset::load_image;
+use runa_engine::ecs::World;
+use runa_engine::prelude::{Transform, Tilemap, TilemapLayer, TilemapRenderer};
+use runa_engine::core::glam::USizeVec2;
 
-fn create_level() -> Object {
-    let mut tilemap = Tilemap::centered(10, 10, USizeVec2::new(32, 32));
-    tilemap.pixels_per_unit = 32.0;
-    tilemap.set_atlas(
-        Some(load_image!("assets/tiles/atlas.png")),
-        Some("assets/tiles/atlas.png".to_string()),
-        8,
-        8,
-    );
-    tilemap.add_layer(TilemapLayer::new("Ground".to_string(), 10, 10));
+fn spawn_level(world: &mut World) -> u64 {
+    let mut tilemap = Tilemap::builder(10, 10)
+        .centered()
+        .tile_size(USizeVec2::new(32, 32))
+        .pixels_per_unit(32.0)
+        .atlas(
+            load_image!("assets/tiles/atlas.png"),
+            Some("assets/tiles/atlas.png".to_string()),
+            8,
+            8,
+        )
+        .layer(TilemapLayer::new("Ground".into(), 10, 10))
+        .build();
+
+    // paint tile at layer 0, world cell (0, 0), atlas frame 0
     tilemap.paint_tile(0, 0, 0, 0);
 
-    Object::new("Level")
-        .with(tilemap)
-        .with(TilemapRenderer::new())
+    world.spawn((Transform::default(), tilemap, TilemapRenderer::new()))
 }
 ```
 
 `TilemapRenderer` is intentionally separate from `Tilemap`: `Tilemap` stores level data, while `TilemapRenderer` makes it visible.
+
+## Tile Ids
+
+Cells are stored as `TileId` (a `u32`). The value `EMPTY_TILE` (`0`) means the cell is empty. The first atlas frame maps to id `1` (see `id_for_frame` / `frame_for_id`), so `EMPTY_TILE` never collides with a real tile.
 
 ## Atlas And Scale
 
@@ -61,7 +58,6 @@ Painting writes directly into the selected object's runtime `Tilemap` component.
 
 ## Notes
 
-- Use layers for visual organization; layers render back-to-front.
+- Use layers for visual organization; layers render back-to-front via `layer.order`.
 - Keep tile painting on objects that have both `Tilemap` and `TilemapRenderer`.
 - For large maps, prefer atlas-based tiles over separate textures per cell.
-

@@ -196,7 +196,7 @@ pub fn tilemap() -> WorldObjectAsset {
                 visible: true,
                 opacity: 1.0,
                 tiles: Vec::new(),
-                self_order: 0,
+                order: 0,
             }],
         }),
         camera: None,

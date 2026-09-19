@@ -3,15 +3,16 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use runa_core::components::{
-    BackgroundMode, Camera, MeshRenderer, Sorting, SpriteRenderer, Transform, UiRenderer,
-    WorldAtmosphere,
+    BackgroundMode, Camera, MeshRenderer, Sorting, SpriteRenderer, Tilemap, TilemapRenderer,
+    Transform, UiRenderer, WorldAtmosphere,
 };
 use runa_core::resources::input::{self, InputState};
 use runa_core::resources::Time;
-use runa_core::{glam, Console};
+use runa_core::components::EMPTY_TILE;
+use runa_core::{glam, Console, Vec2};
 use runa_ecs::{R, W};
 use runa_render::Renderer;
-use runa_render_api::{Mesh3dParams, RenderQueue};
+use runa_render_api::{InstanceData, Mesh3dParams, RenderQueue};
 
 use winit::application::ApplicationHandler;
 use winit::event::{DeviceEvent, DeviceId, ElementState, KeyEvent, MouseScrollDelta, WindowEvent};
@@ -122,6 +123,103 @@ impl<'window> App<'window> {
         }
     }
 
+    fn render_ecs_tilemap(&mut self, camera: &Camera) {
+        let visible = camera.ortho_visible_size();
+        let half = visible * 0.5;
+        let cam_pos = camera.position.truncate();
+        let world_left = cam_pos.x - half.x;
+        let world_right = cam_pos.x + half.x;
+        let world_bottom = cam_pos.y - half.y;
+        let world_top = cam_pos.y + half.y;
+
+        let Self {
+            ref mut queue,
+            ..
+        } = self;
+
+        for (_entity, (transform, tm, _renderer)) in
+            self.world.query::<(R<Transform>, R<Tilemap>, R<TilemapRenderer>)>()
+        {
+            let Some(atlas) = tm.atlas.as_ref() else {
+                continue;
+            };
+            let ts = tm.world_tile_size();
+            if ts.x <= f32::EPSILON || ts.y <= f32::EPSILON {
+                continue;
+            }
+            let base = transform.position.truncate();
+            let scale = transform
+                .scale
+                .truncate()
+                .abs()
+                .max(Vec2::splat(f32::EPSILON));
+            let world_ts = ts * scale;
+
+            let local_left = (world_left - base.x) / scale.x;
+            let local_right = (world_right - base.x) / scale.x;
+            let local_bottom = (world_bottom - base.y) / scale.y;
+            let local_top = (world_top - base.y) / scale.y;
+
+            let min_cx = ((local_left / ts.x).floor() as i32)
+                .max(tm.offset.x)
+                .min(tm.offset.x + tm.width as i32 - 1);
+            let max_cx = ((local_right / ts.x).floor() as i32)
+                .max(tm.offset.x)
+                .min(tm.offset.x + tm.width as i32 - 1);
+            let min_cy = ((local_bottom / ts.y).floor() as i32)
+                .max(tm.offset.y)
+                .min(tm.offset.y + tm.height as i32 - 1);
+            let max_cy = ((local_top / ts.y).floor() as i32)
+                .max(tm.offset.y)
+                .min(tm.offset.y + tm.height as i32 - 1);
+
+            if min_cx > max_cx || min_cy > max_cy {
+                continue;
+            }
+
+            let frame_count = atlas.frame_count();
+
+            for layer in &tm.layers {
+                if !layer.visible || layer.opacity <= 0.0 {
+                    continue;
+                }
+                let alpha = layer.opacity.clamp(0.0, 1.0);
+                let mut instances: Vec<InstanceData> = Vec::new();
+
+                for cy in min_cy..=max_cy {
+                    for cx in min_cx..=max_cx {
+                        let array_x = (cx - tm.offset.x) as u32;
+                        let array_y = (cy - tm.offset.y) as u32;
+                        let id = layer.get(array_x, array_y);
+                        if id == EMPTY_TILE {
+                            continue;
+                        }
+                        let frame = tm.frame_for_id(id);
+                        if frame >= frame_count {
+                            continue;
+                        }
+                        let uv = atlas.uv_rect_for_frame(frame);
+                        instances.push(InstanceData {
+                            position: [
+                                base.x + (cx as f32 + 0.5) * world_ts.x,
+                                base.y + (cy as f32 + 0.5) * world_ts.y,
+                                0.0,
+                            ],
+                            rotation: 0.0,
+                            scale: [world_ts.x, world_ts.y, 1.0],
+                            color: [1.0, 1.0, 1.0, alpha],
+                            uv_offset: [uv.x, uv.y],
+                            uv_size: [uv.width, uv.height],
+                            flip: 0,
+                        });
+                    }
+                }
+
+                queue.draw_tiles_batch(atlas.texture.clone(), instances, layer.order);
+            }
+        }
+    }
+
     fn render_ecs_ui(&mut self, camera: &Camera) {
         let viewport = glam::Vec2::new(
             camera.viewport_size.0.max(1) as f32,
@@ -186,8 +284,8 @@ impl<'window> App<'window> {
                 .iter()
                 .map(|v| runa_render_api::Vertex3D {
                     position: v.position,
-                    normal: v.normal,
                     uv: v.uv,
+                    normal: v.normal,
                     color: v.color,
                 })
                 .collect();
@@ -256,6 +354,7 @@ impl<'window> App<'window> {
         }
         self.render_ecs_sprites(self.interpolation_alpha);
         self.render_ecs_meshes(self.interpolation_alpha);
+        self.render_ecs_tilemap(&camera);
         self.render_ecs_ui(&camera);
 
         if let (Some(renderer), Some(window)) = (&mut self.renderer, &self.window) {

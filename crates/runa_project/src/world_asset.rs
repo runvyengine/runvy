@@ -13,7 +13,7 @@ use runa_core::components::{
     ObjectDefinitionInstance, PhysicsCollision, ProjectionType, SerializedField,
     SerializedTypeEntry, SerializedTypeKind, SerializedTypeStorage, Sorting, SpriteAnimationClip,
     SpriteAnimator, SpriteRenderer, SpriteSheet, Tilemap, TilemapLayer, TilemapRenderer, Transform,
-    WorldAtmosphere, DEFAULT_SPRITE_PIXELS_PER_UNIT,
+    WorldAtmosphere, EMPTY_TILE, DEFAULT_SPRITE_PIXELS_PER_UNIT,
 };
 use runa_core::glam::{IVec2, Quat, USizeVec2, Vec2, Vec3};
 use runa_core::ocs::{Object, ObjectComponentInfo};
@@ -376,7 +376,8 @@ pub struct TilemapLayerAsset {
     pub opacity: f32,
     #[serde(default)]
     pub tiles: Vec<Option<u32>>,
-    pub self_order: i32,
+    #[serde(default, rename = "self_order")]
+    pub order: i32,
 }
 
 pub fn create_empty_world() -> Rc<RefCell<World>> {
@@ -1483,15 +1484,15 @@ impl TilemapLayerAsset {
             tiles: layer
                 .tiles
                 .iter()
-                .map(|tile| {
-                    tile.texture.as_ref()?;
-                    tilemap
-                        .atlas
-                        .as_ref()
-                        .and_then(|atlas| atlas.tile_index_for_uv(tile.uv_rect))
+                .map(|&id| {
+                    if id == EMPTY_TILE {
+                        return None;
+                    }
+                    let frame = tilemap.frame_for_id(id);
+                    (frame < tilemap.atlas_frame_count()).then_some(frame)
                 })
                 .collect(),
-            self_order: layer.self_order,
+            order: layer.order,
         }
     }
 
@@ -1499,16 +1500,13 @@ impl TilemapLayerAsset {
         let mut layer = TilemapLayer::new(self.name, width, height);
         layer.visible = self.visible;
         layer.opacity = self.opacity;
-        layer.self_order = self.self_order;
+        layer.order = self.order;
         for (index, frame) in self.tiles.into_iter().enumerate() {
             let Some(frame) = frame else {
                 continue;
             };
-            let Some(tile) = tilemap.atlas_tile(frame) else {
-                continue;
-            };
             if let Some(target) = layer.tiles.get_mut(index) {
-                *target = tile;
+                *target = tilemap.id_for_frame(frame);
             }
         }
         layer

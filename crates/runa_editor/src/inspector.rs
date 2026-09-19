@@ -794,7 +794,7 @@ fn components_section(
                                 property_row(ui, "Render Order", |ui| {
                                     ui.add_sized(
                                         [96.0, 22.0],
-                                        egui::DragValue::new(&mut layer.self_order).speed(1),
+                                        egui::DragValue::new(&mut layer.order).speed(1),
                                     );
                                 });
                                 property_row(ui, "Actions", |ui| {

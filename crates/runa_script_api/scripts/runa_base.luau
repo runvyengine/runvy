@@ -266,13 +266,6 @@ export type PointLight = {
     radius: number,
     falloff: number,
 }
---- Rectangle used for UV coordinates and placement.
-export type Rect = {
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-}
 export type ScreenEffects = {
     enabled: ScreenEffectFlags,
     fade_color: { [number]: number },
@@ -321,39 +314,43 @@ export type SpriteSheet = {
     columns: number,
     rows: number,
 }
---- A single tile in a tilemap.
-export type Tile = {
-    uv_rect: Rect,
-    flip_x: boolean,
-    flip_y: boolean,
-}
 --- Tilemap data component.
 export type Tilemap = {
     --- Map size in tiles.
     width: number,
     height: number,
-    --- Layers ordered from back to front.
+    --- Layers ordered from back to front. Painting expands the map
+    --- automatically, growing `width`/`height`/`offset` as needed.
     layers: { [number]: TilemapLayer },
     selected_tile: number,
     pixels_per_unit: number,
 }
---- A single tilemap layer.
+--- A single tilemap layer: a dense, rectangular grid of [`TileId`]s.
 export type TilemapLayer = {
     name: string,
     width: number,
     height: number,
-    tiles: { [number]: Tile },
+    --- `width * height` elements, row-major. `EMPTY_TILE` (0) is empty.
+    tiles: { [number]: TileId },
     visible: boolean,
     opacity: number,
-    self_order: number,
+    --- Draw order relative to other layers and world objects.
+    order: number,
 }
---- Rendering Component for Tilemap
+--- Rendering Component for Tilemap.
 export type TilemapRenderer = {
 }
 export type Transform = {
     position: Vec3,
     rotation: Quat,
     scale: Vec3,
+}
+--- Rectangle used for UV coordinates inside an atlas.
+export type UvRect = {
+    x: number,
+    y: number,
+    width: number,
+    height: number,
 }
 export type WorldAtmosphere = {
     ambient_color: Color,
@@ -375,18 +372,17 @@ local MeshRenderer: MeshRenderer = {} :: MeshRenderer;
 local ObjectDefinitionInstance: ObjectDefinitionInstance = {} :: ObjectDefinitionInstance;
 local PhysicsCollision: PhysicsCollision = {} :: PhysicsCollision;
 local PointLight: PointLight = {} :: PointLight;
-local Rect: Rect = {} :: Rect;
 local ScreenEffects: ScreenEffects = {} :: ScreenEffects;
 local Sorting: Sorting = {} :: Sorting;
 local SpriteAnimationClip: SpriteAnimationClip = {} :: SpriteAnimationClip;
 local SpriteAnimator: SpriteAnimator = {} :: SpriteAnimator;
 local SpriteRenderer: SpriteRenderer = {} :: SpriteRenderer;
 local SpriteSheet: SpriteSheet = {} :: SpriteSheet;
-local Tile: Tile = {} :: Tile;
 local Tilemap: Tilemap = {} :: Tilemap;
 local TilemapLayer: TilemapLayer = {} :: TilemapLayer;
 local TilemapRenderer: TilemapRenderer = {} :: TilemapRenderer;
 local Transform: Transform = {} :: Transform;
+local UvRect: UvRect = {} :: UvRect;
 local WorldAtmosphere: WorldAtmosphere = {} :: WorldAtmosphere;
 -- @@runa:markers@@
 export type ScriptContext = {
@@ -418,18 +414,17 @@ return {
     ObjectDefinitionInstance = ObjectDefinitionInstance,
     PhysicsCollision = PhysicsCollision,
     PointLight = PointLight,
-    Rect = Rect,
     ScreenEffects = ScreenEffects,
     Sorting = Sorting,
     SpriteAnimationClip = SpriteAnimationClip,
     SpriteAnimator = SpriteAnimator,
     SpriteRenderer = SpriteRenderer,
     SpriteSheet = SpriteSheet,
-    Tile = Tile,
     Tilemap = Tilemap,
     TilemapLayer = TilemapLayer,
     TilemapRenderer = TilemapRenderer,
     Transform = Transform,
+    UvRect = UvRect,
     WorldAtmosphere = WorldAtmosphere,
 -- @@runa:return@@
     vec2 = function(x: number, y: number): Vec2 return { x = x, y = y } end,

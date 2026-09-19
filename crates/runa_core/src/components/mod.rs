@@ -47,8 +47,9 @@ pub use serialized_type_storage::{SerializedTypeEntry, SerializedTypeKind, Seria
 pub use sorting::Sorting;
 pub use sprite_animator::{SpriteAnimationClip, SpriteAnimator, SpriteSheet};
 pub use sprite_renderer::{SpriteRenderer, DEFAULT_SPRITE_PIXELS_PER_UNIT};
-pub use tilemap::Rect;
-pub use tilemap::Tile;
+pub use tilemap::UvRect;
+pub use tilemap::EMPTY_TILE;
+pub use tilemap::TileId;
 pub use tilemap::Tilemap;
 pub use tilemap::TilemapLayer;
 pub use tilemap::TilemapRenderer;

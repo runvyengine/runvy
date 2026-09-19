@@ -18,6 +18,7 @@ members = [
     "examples/sandbox_3d",
     "examples/sandbox_ui",
     "examples/console_test",
+    "examples/tilemap_test",
 ]
 exclude = ["templates"]
 resolver = "2"
