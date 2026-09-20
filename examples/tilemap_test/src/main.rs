@@ -1,5 +1,7 @@
 use runvy_engine::{
-    app::{RunvyApp, RunvyWindowConfig}, core::components::{Camera, Transform}, ecs::World,
+    app::{RunvyApp, RunvyWindowConfig},
+    core::components::{Camera, Transform},
+    ecs::World,
 };
 
 mod tilemap;
@@ -21,7 +23,7 @@ fn main() {
         window_icon: None,
         luau_types_path: Some("scripts".into()),
     };
-    
+
     world.spawn((Transform::default(), Camera::new_orthographic(32.0, 18.0)));
 
     let _ = RunvyApp::run_with_config(world, config);
