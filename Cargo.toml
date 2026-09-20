@@ -1,16 +1,16 @@
 [workspace]
 members = [
-    "crates/runa_macros",
-    "crates/runa_engine",
-    "crates/runa_app",
-    "crates/runa_core",
-    "crates/runa_ecs",
-    "crates/runa_render",
-    "crates/runa_asset",
-    # "crates/runa_project",
-    # "crates/runa_editor",
-    "crates/runa_render_api",
-    "crates/runa_script_api",
+    "crates/runvy_macros",
+    "crates/runvy_engine",
+    "crates/runvy_app",
+    "crates/runvy_core",
+    "crates/runvy_ecs",
+    "crates/runvy_render",
+    "crates/runvy_asset",
+    # "crates/runvy_project",
+    # "crates/runvy_editor",
+    "crates/runvy_render_api",
+    "crates/runvy_script_api",
     "examples/command_queue_test",
     "examples/lua_scripting_test",
     "examples/sandbox",
@@ -28,7 +28,7 @@ version = "0.8.0-pre.4"
 authors = ["Nik Neza <nik.n.neza@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/RunaLight/runa"
+repository = "https://github.com/runvyengine/runvy"
 description = "2D/3D game engine in Rust"
 
 [workspace.dependencies]

@@ -1,0 +1,20 @@
+[package]
+name = "runvy_project"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json.workspace = true
+ron = "0.8"
+runvy_core = { path = "../runvy_core" }
+runvy_asset = { path = "../runvy_asset" }
+gltf.workspace = true
+zip.workspace = true
+image = "0.24"
+thiserror = "1.0"
+
+[dev-dependencies]
+tempfile = "3.0"

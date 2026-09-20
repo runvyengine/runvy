@@ -1,10 +1,10 @@
-use runa_engine::app::{RunaApp, RunaWindowConfig};
-use runa_engine::core::components::{Camera, Transform, UiRenderer};
-use runa_engine::core::ecs::{World, W};
-use runa_engine::core::glam::Vec3;
-use runa_engine::core::resources::Time;
-use runa_engine::core::ui::{CanvasSpace, TextHandle};
-use runa_engine::system;
+use runvy_engine::app::{RunvyApp, RunvyWindowConfig};
+use runvy_engine::core::components::{Camera, Transform, UiRenderer};
+use runvy_engine::core::ecs::{World, W};
+use runvy_engine::core::glam::Vec3;
+use runvy_engine::core::resources::Time;
+use runvy_engine::core::ui::{CanvasSpace, TextHandle};
+use runvy_engine::system;
 
 /// Component (sits on the same entity as the screen `UiRenderer`) holding the
 /// handle of the text node whose color is animated every frame.
@@ -20,7 +20,7 @@ fn ui_builder(ui: &mut UiRenderer) -> Option<TextHandle> {
         let mut pulse_handle: Option<TextHandle> = None;
 
         ui.vbox(|ui| {
-            ui.add_text("Runa Engine UI Demo")
+            ui.add_text("Runvy Engine UI Demo")
                 .with_font_size(28.0)
                 .with_text_color(0.0, 0.8, 1.0, 1.0);
 
@@ -103,7 +103,7 @@ fn pulse_text_system(world: &mut World) {
 /// Runs once at startup (after resources are initialized).
 #[system(Start)]
 fn startup_banner(_world: &mut World) {
-    println!("[startup] Runa UI demo initialized");
+    println!("[startup] Runvy UI demo initialized");
 }
 
 fn main() {
@@ -132,8 +132,8 @@ fn main() {
         },
     ));
 
-    let config = RunaWindowConfig {
-        title: "Runa UI Demo — Screen (left) + World (right, entity-attached)".to_string(),
+    let config = RunvyWindowConfig {
+        title: "Runvy UI Demo — Screen (left) + World (right, entity-attached)".to_string(),
         width: 1280,
         height: 720,
         fullscreen: false,
@@ -143,5 +143,5 @@ fn main() {
         luau_types_path: None,
     };
 
-    let _ = RunaApp::run_with_config(world, config);
+    let _ = RunvyApp::run_with_config(world, config);
 }

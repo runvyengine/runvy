@@ -6,4 +6,4 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
-runa_engine = { path = "../../crates/runa_engine" }
+runvy_engine = { path = "../../crates/runvy_engine" }

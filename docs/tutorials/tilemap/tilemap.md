@@ -5,10 +5,10 @@ Tilemaps are runtime data components used to build 2D levels. Tiles are painted 
 ## Runtime Composition
 
 ```rust
-use runa_engine::asset::load_image;
-use runa_engine::ecs::World;
-use runa_engine::prelude::{Transform, Tilemap, TilemapLayer, TilemapRenderer};
-use runa_engine::core::glam::USizeVec2;
+use runvy_engine::asset::load_image;
+use runvy_engine::ecs::World;
+use runvy_engine::prelude::{Transform, Tilemap, TilemapLayer, TilemapRenderer};
+use runvy_engine::core::glam::USizeVec2;
 
 fn spawn_level(world: &mut World) -> u64 {
     let mut tilemap = Tilemap::builder(10, 10)

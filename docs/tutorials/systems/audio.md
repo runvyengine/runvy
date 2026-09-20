@@ -1,6 +1,6 @@
 # Audio System
 
-Runa supports simple 2D and spatial audio through `AudioSource` and `AudioListener`.
+Runvy supports simple 2D and spatial audio through `AudioSource` and `AudioListener`.
 
 ## Composition
 
@@ -9,10 +9,10 @@ Needs to be rewritten to match the current data.
 Attach audio components when building the object:
 
 ```rust
-use runa_engine::runa_core::{components::AudioSource, ocs::Object};
+use runvy_engine::runvy_core::{components::AudioSource, ocs::Object};
 
 let object = Object::new("Sound Source").with(
-    AudioSource::with_asset(runa_engine::runa_asset::load_audio!("assets/sound.ogg"))
+    AudioSource::with_asset(runvy_engine::runvy_asset::load_audio!("assets/sound.ogg"))
 );
 ```
 
@@ -22,7 +22,7 @@ For spatial audio:
 let emitter = Object::new("Emitter")
     .with(Transform::default())
     .with(AudioSource::with_asset_3d(
-        runa_engine::runa_asset::load_audio!("assets/ambient.ogg")
+        runvy_engine::runvy_asset::load_audio!("assets/ambient.ogg")
     ));
 ```
 
@@ -37,7 +37,7 @@ let listener = Object::new("Listener")
 ## Triggering Audio from a Script
 
 ```rust
-use runa_engine::runa_core::{
+use runvy_engine::runvy_core::{
     components::{AudioSource, Transform},
     input_system::*,
     ocs::{Object, Script, ScriptContext},
@@ -59,7 +59,7 @@ fn create_player() -> Object {
     Object::new("Player")
         .with(Transform::default())
         .with(AudioSource::with_asset(
-            runa_engine::runa_asset::load_audio!("assets/jump.ogg")
+            runvy_engine::runvy_asset::load_audio!("assets/jump.ogg")
         ))
         .with(PlayerAudio)
 }
@@ -73,7 +73,7 @@ fn create_emitter() -> Object {
     transform.position.x = 5.0;
 
     let mut audio = AudioSource::with_asset_3d(
-        runa_engine::runa_asset::load_audio!("assets/ambient.ogg")
+        runvy_engine::runvy_asset::load_audio!("assets/ambient.ogg")
     );
     audio.looped = true;
     audio.play_on_awake = true;

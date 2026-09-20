@@ -1,12 +1,12 @@
 # Creating Your First App
 
-This tutorial shows the smallest useful Runa application using the code-first API.
+This tutorial shows the smallest useful Runvy application using the code-first API.
 
 ## Dependency
 
 ```toml
 [dependencies]
-runa_engine = { git = "https://github.com/RunaLight/runa.git", tag = "v0.6.0-alpha.1" }
+runvy_engine = { git = "https://github.com/runvyengine/runvy.git", tag = "v0.6.0-alpha.1" }
 ```
 
 ## Minimal App

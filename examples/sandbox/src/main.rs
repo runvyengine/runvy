@@ -1,12 +1,12 @@
-use runa_engine::app::{RunaApp, RunaWindowConfig};
-use runa_engine::core::components::{Camera, SpriteRenderer, Transform};
-use runa_engine::core::glam::Vec3;
-use runa_engine::core::resources::{input::InputState, Time};
-use runa_engine::core::KeyCode;
-use runa_engine::ecs::W;
-use runa_engine::prelude::{console_log, MessageLevel};
-use runa_engine::system;
-use runa_engine::{asset, ecs};
+use runvy_engine::app::{RunvyApp, RunvyWindowConfig};
+use runvy_engine::core::components::{Camera, SpriteRenderer, Transform};
+use runvy_engine::core::glam::Vec3;
+use runvy_engine::core::resources::{input::InputState, Time};
+use runvy_engine::core::KeyCode;
+use runvy_engine::ecs::W;
+use runvy_engine::prelude::{console_log, MessageLevel};
+use runvy_engine::system;
+use runvy_engine::{asset, ecs};
 
 #[system]
 fn player_movement(world: &mut ecs::World) {
@@ -57,8 +57,8 @@ fn main() {
 
     world.spawn((Camera::new_orthographic(32.0, 18.0),));
 
-    let config = RunaWindowConfig {
-        title: "Runa Sandbox".to_string(),
+    let config = RunvyWindowConfig {
+        title: "Runvy Sandbox".to_string(),
         width: 1280,
         height: 720,
         fullscreen: false,
@@ -68,5 +68,5 @@ fn main() {
         luau_types_path: None,
     };
 
-    let _ = RunaApp::run_with_config(world, config);
+    let _ = RunvyApp::run_with_config(world, config);
 }

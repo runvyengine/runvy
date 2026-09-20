@@ -1,18 +1,18 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
 # Object Model
 
-This note describes the current Runa runtime architecture.
+This note describes the current Runvy runtime architecture.
 
 ## Runtime Contract
 
-Runa treats the runtime object graph as the primary model:
+Runvy treats the runtime object graph as the primary model:
 
 - `World`
 - `Object`
@@ -48,7 +48,7 @@ Examples:
 - marker components
 - script components
 
-Runa intentionally avoids string-based tag systems as the primary gameplay linking mechanism. Prefer typed marker/data components instead.
+Runvy intentionally avoids string-based tag systems as the primary gameplay linking mechanism. Prefer typed marker/data components instead.
 
 Define components with `#[derive(Component)]`:
 
@@ -140,7 +140,7 @@ world.spawn_object(
 
 ## Why Registration Was Removed
 
-Older Runa versions required explicit registration of components, scripts, and archetypes through `Engine::register()`, `RunaComponent`, `RunaScript`, and `RunaArchetype` derives. This was used for:
+Older Runvy versions required explicit registration of components, scripts, and archetypes through `Engine::register()`, `RunvyComponent`, `RunvyScript`, and `RunvyArchetype` derives. This was used for:
 
 - editor/tooling metadata
 - serialization bootstrap hooks
@@ -152,7 +152,7 @@ Metadata for future editor/tooling integration can be re-added later through a s
 
 ## Why `construct()` Was Removed
 
-Older Runa scripts used `construct()` to add components.
+Older Runvy scripts used `construct()` to add components.
 
 That made scripts:
 

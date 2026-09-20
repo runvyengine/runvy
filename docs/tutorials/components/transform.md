@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -25,8 +25,8 @@ let object = Object::new("Mover");
 You only add `Transform` explicitly when you want non-default initial values:
 
 ```rust
-use runa_engine::runa_core::{Quat, Vec3};
-use runa_engine::runa_core::components::Transform;
+use runvy_engine::runvy_core::{Quat, Vec3};
+use runvy_engine::runvy_core::components::Transform;
 
 let object = Object::new("Mover").with(Transform {
     position: Vec3::new(4.0, 2.0, 0.0),
@@ -40,7 +40,7 @@ let object = Object::new("Mover").with(Transform {
 ## Common Usage
 
 ```rust
-use runa_engine::runa_core::glam::Vec3;
+use runvy_engine::runvy_core::glam::Vec3;
 
 if let Some(transform) = ctx.get_component_mut::<Transform>() {
     transform.position = Vec3::new(1.0, 2.0, 0.0);
@@ -52,7 +52,7 @@ if let Some(transform) = ctx.get_component_mut::<Transform>() {
 ## Behavior Example
 
 ```rust
-use runa_engine::runa_core::{
+use runvy_engine::runvy_core::{
     components::Transform,
     ocs::{Object, Script, ScriptContext},
 };

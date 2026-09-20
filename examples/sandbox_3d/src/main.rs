@@ -1,9 +1,9 @@
-use runa_engine::app::{RunaApp, RunaWindowConfig};
-use runa_engine::core::components::{Mesh, MeshRenderer, Transform};
-use runa_engine::core::glam::{Quat, Vec3};
-use runa_engine::core::resources::Time;
-use runa_engine::ecs::{World, R, W};
-use runa_engine::system;
+use runvy_engine::app::{RunvyApp, RunvyWindowConfig};
+use runvy_engine::core::components::{Mesh, MeshRenderer, Transform};
+use runvy_engine::core::glam::{Quat, Vec3};
+use runvy_engine::core::resources::Time;
+use runvy_engine::ecs::{World, R, W};
+use runvy_engine::system;
 
 use crate::camera_ctrl::spawn_camera;
 
@@ -42,8 +42,8 @@ fn main() {
 
     let _ = spawn_camera(&mut world);
 
-    let config = RunaWindowConfig {
-        title: "Runa 3D Sandbox - rotating cubes".to_string(),
+    let config = RunvyWindowConfig {
+        title: "Runvy 3D Sandbox - rotating cubes".to_string(),
         width: 1280,
         height: 720,
         fullscreen: false,
@@ -53,5 +53,5 @@ fn main() {
         luau_types_path: None,
     };
 
-    let _ = RunaApp::run_with_config(world, config);
+    let _ = RunvyApp::run_with_config(world, config);
 }

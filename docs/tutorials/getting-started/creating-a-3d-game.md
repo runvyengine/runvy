@@ -1,6 +1,6 @@
 # Creating a 3D Game
 
-This guide shows the current recommended Runa pattern for a small 3D scene.
+This guide shows the current recommended Runvy pattern for a small 3D scene.
 Applies to version 0.7.6 and later.
 
 ## 1. Create the application
@@ -12,16 +12,16 @@ Start with an empty application in `main.rs`:
 ```rust
 // main.rs
 
-use runa_core::runa_ecs::World;
-use runa_engine::runa_app::{RunaApp, RunaWindowConfig};
+use runvy_core::runvy_ecs::World;
+use runvy_engine::runvy_app::{RunvyApp, RunvyWindowConfig};
 
 fn main() {
     // Create the world
     let mut world = World::new();
 
     // Configure the window
-    let config = RunaWindowConfig {
-        title: "Small 3D scene in Runa".to_string(),
+    let config = RunvyWindowConfig {
+        title: "Small 3D scene in Runvy".to_string(),
         width: 1280,
         height: 720,
         fullscreen: false,
@@ -30,12 +30,12 @@ fn main() {
         window_icon: None,
     };
 
-    let _ = RunaApp::run_with_config(world, config);
+    let _ = RunvyApp::run_with_config(world, config);
 }
 ```
 
 `run_with_config` takes the world first and the config second. For quick
-tests you can also use `RunaApp::run_default(world)` — it creates a default
+tests you can also use `RunvyApp::run_default(world)` — it creates a default
 window and config for you.
 
 ## 2. Camera controller
@@ -45,14 +45,14 @@ constructor that spawns the camera entity:
 
 ```rust
 // camera_controller.rs
-use runa_core::{
+use runvy_core::{
     components::{Camera, Transform},
     glam::{Quat, Vec3},
     input::{lock_cursor, show_cursor, InputState},
-    runa_ecs::{World, W},
+    runvy_ecs::{World, W},
     KeyCode,
 };
-use runa_engine::system;
+use runvy_engine::system;
 
 // Our own component. The system below works with it.
 struct CameraController {
@@ -143,11 +143,11 @@ the app with our world:
 
 ```rust
 // main.rs
-use runa_core::components::{Mesh, MeshRenderer, Transform};
-use runa_core::glam::{Quat, Vec3};
-use runa_core::runa_ecs::{World, R, W};
-use runa_engine::runa_app::{RunaApp, RunaWindowConfig};
-use runa_engine::system;
+use runvy_core::components::{Mesh, MeshRenderer, Transform};
+use runvy_core::glam::{Quat, Vec3};
+use runvy_core::runvy_ecs::{World, R, W};
+use runvy_engine::runvy_app::{RunvyApp, RunvyWindowConfig};
+use runvy_engine::system;
 
 use crate::camera_controller::spawn_camera;
 
@@ -190,8 +190,8 @@ fn main() {
     // Our entity with camera and controller
     let _ = spawn_camera(&mut world);
 
-    let config = RunaWindowConfig {
-        title: "Runa 3D Sandbox - rotating cubes".to_string(),
+    let config = RunvyWindowConfig {
+        title: "Runvy 3D Sandbox - rotating cubes".to_string(),
         width: 1280,
         height: 720,
         fullscreen: false,
@@ -200,7 +200,7 @@ fn main() {
         window_icon: None,
     };
 
-    let _ = RunaApp::run_with_config(world, config);
+    let _ = RunvyApp::run_with_config(world, config);
 }
 ```
 

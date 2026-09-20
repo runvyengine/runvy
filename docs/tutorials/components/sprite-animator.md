@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -18,8 +18,8 @@ This keeps responsibilities separate:
 ## Basic Usage
 
 ```rust
-use runa_engine::runa_asset::load_image;
-use runa_engine::runa_core::{
+use runvy_engine::runvy_asset::load_image;
+use runvy_engine::runvy_core::{
     components::{SpriteAnimationClip, SpriteAnimator, SpriteRenderer, SpriteSheet},
     ocs::Object,
 };

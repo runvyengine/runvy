@@ -50,7 +50,7 @@ Desktop.ini     # Windows
 *.env
 
 # === Автогенерируемые файлы (build.rs) ===
-/crates/runa_scripting/runa_types.lua
+/crates/runvy_scripting/runvy_types.lua
 
-# === Сгенерированные Luau типы проекта (runa.luau) ===
-**/.runa/
+# === Сгенерированные Luau типы проекта (runvy.luau) ===
+**/.runvy/

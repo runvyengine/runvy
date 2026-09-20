@@ -1,15 +1,15 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
 # Interpolation & Smoothing
 
-Runa provides a set of interpolation, easing, and smoothing utilities modelled after Unity's `Mathf`.
-All functions live in `runa_core::math` and are re-exported through `runa_engine::prelude::*`.
+Runvy provides a set of interpolation, easing, and smoothing utilities modelled after Unity's `Mathf`.
+All functions live in `runvy_core::math` and are re-exported through `runvy_engine::prelude::*`.
 
 ---
 
@@ -146,7 +146,7 @@ let v = move_towards(0.0, 10.0, 3.0);  // 3.0
 
 ## Extension Trait: `LerpExt`
 
-Available on `f32`, `Vec2`, `Vec3`, `Vec4` via `use runa_engine::prelude::*`:
+Available on `f32`, `Vec2`, `Vec3`, `Vec4` via `use runvy_engine::prelude::*`:
 
 ```rust
 let v = 0.0_f32.lerp(10.0, 0.5);      // 5.0

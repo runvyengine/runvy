@@ -1,5 +1,5 @@
-use runa_engine::{
-    app::{RunaApp, RunaWindowConfig},
+use runvy_engine::{
+    app::{RunvyApp, RunvyWindowConfig},
     asset::load_image,
     core::{
         components::{Camera, SpriteRenderer, Transform},
@@ -40,7 +40,7 @@ fn main() {
 
     spawn_test(&mut world);
 
-    let cfg = RunaWindowConfig {
+    let cfg = RunvyWindowConfig {
         title: "command_queue_test".into(),
         width: 1280,
         height: 720,
@@ -51,5 +51,5 @@ fn main() {
         luau_types_path: None,
     };
 
-    let _ = RunaApp::run_with_config(world, cfg);
+    let _ = RunvyApp::run_with_config(world, cfg);
 }

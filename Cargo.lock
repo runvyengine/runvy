@@ -385,7 +385,7 @@ dependencies = [
 name = "command_queue_test"
 version = "0.8.0-pre.4"
 dependencies = [
- "runa_engine",
+ "runvy_engine",
 ]
 
 [[package]]
@@ -401,7 +401,7 @@ dependencies = [
 name = "console_test"
 version = "0.8.0-pre.4"
 dependencies = [
- "runa_engine",
+ "runvy_engine",
 ]
 
 [[package]]
@@ -1374,7 +1374,7 @@ checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
 name = "lua_scripting_test"
 version = "0.8.0-pre.4"
 dependencies = [
- "runa_engine",
+ "runvy_engine",
 ]
 
 [[package]]
@@ -2355,20 +2355,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7204ed6420f698836b76d4d5c2ec5dec7585fd5c3a788fd1cde855d1de598239"
 
 [[package]]
-name = "runa_app"
+name = "runvy_app"
 version = "0.8.0-pre.4"
 dependencies = [
- "runa_asset",
- "runa_core",
- "runa_ecs",
- "runa_render",
- "runa_render_api",
- "runa_script_api",
+ "runvy_asset",
+ "runvy_core",
+ "runvy_ecs",
+ "runvy_render",
+ "runvy_render_api",
+ "runvy_script_api",
  "winit",
 ]
 
 [[package]]
-name = "runa_asset"
+name = "runvy_asset"
 version = "0.8.0-pre.4"
 dependencies = [
  "gltf",
@@ -2383,7 +2383,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "runa_core"
+name = "runvy_core"
 version = "0.8.0-pre.4"
 dependencies = [
  "bytemuck",
@@ -2391,42 +2391,42 @@ dependencies = [
  "inventory",
  "rodio",
  "ron",
- "runa_asset",
- "runa_ecs",
- "runa_macros",
- "runa_render",
- "runa_render_api",
- "runa_script_api",
+ "runvy_asset",
+ "runvy_ecs",
+ "runvy_macros",
+ "runvy_render",
+ "runvy_render_api",
+ "runvy_script_api",
  "serde",
  "winit",
 ]
 
 [[package]]
-name = "runa_ecs"
+name = "runvy_ecs"
 version = "0.8.0-pre.4"
 dependencies = [
  "inventory",
 ]
 
 [[package]]
-name = "runa_engine"
+name = "runvy_engine"
 version = "0.8.0-pre.4"
 dependencies = [
  "glam",
  "inventory",
  "luau",
- "runa_app",
- "runa_asset",
- "runa_core",
- "runa_ecs",
- "runa_macros",
- "runa_script_api",
+ "runvy_app",
+ "runvy_asset",
+ "runvy_core",
+ "runvy_ecs",
+ "runvy_macros",
+ "runvy_script_api",
  "serde",
  "serde_json",
 ]
 
 [[package]]
-name = "runa_macros"
+name = "runvy_macros"
 version = "0.8.0-pre.4"
 dependencies = [
  "proc-macro2",
@@ -2435,37 +2435,37 @@ dependencies = [
 ]
 
 [[package]]
-name = "runa_render"
+name = "runvy_render"
 version = "0.8.0-pre.4"
 dependencies = [
  "bytemuck",
  "glam",
  "pollster",
- "runa_asset",
- "runa_render_api",
+ "runvy_asset",
+ "runvy_render_api",
  "rusttype",
  "wgpu",
  "winit",
 ]
 
 [[package]]
-name = "runa_render_api"
+name = "runvy_render_api"
 version = "0.8.0-pre.4"
 dependencies = [
  "bytemuck",
  "glam",
  "luau",
- "runa_asset",
+ "runvy_asset",
 ]
 
 [[package]]
-name = "runa_script_api"
+name = "runvy_script_api"
 version = "0.8.0-pre.4"
 dependencies = [
  "glam",
  "inventory",
  "luau",
- "runa_ecs",
+ "runvy_ecs",
 ]
 
 [[package]]
@@ -2538,28 +2538,28 @@ dependencies = [
 name = "sandbox"
 version = "0.8.0-pre.4"
 dependencies = [
- "runa_engine",
+ "runvy_engine",
 ]
 
 [[package]]
 name = "sandbox_3d"
 version = "0.8.0-pre.4"
 dependencies = [
- "runa_engine",
+ "runvy_engine",
 ]
 
 [[package]]
 name = "sandbox_soundtest"
 version = "0.8.0-pre.4"
 dependencies = [
- "runa_engine",
+ "runvy_engine",
 ]
 
 [[package]]
 name = "sandbox_ui"
 version = "0.8.0-pre.4"
 dependencies = [
- "runa_engine",
+ "runvy_engine",
 ]
 
 [[package]]
@@ -2981,7 +2981,7 @@ dependencies = [
 name = "tilemap_test"
 version = "0.8.0-pre.4"
 dependencies = [
- "runa_engine",
+ "runvy_engine",
 ]
 
 [[package]]

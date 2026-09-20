@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -13,7 +13,7 @@ See ROADMAP.md for the current migration track.
 ## Composition Example
 
 ```rust
-use runa_engine::runa_core::{components::CursorInteractable, ocs::Object};
+use runvy_engine::runvy_core::{components::CursorInteractable, ocs::Object};
 
 let mut interactable = CursorInteractable::new(100.0, 50.0);
 interactable.set_on_hover_enter(|| println!("Hover enter"));
@@ -25,7 +25,7 @@ let object = Object::new("Button").with(interactable);
 ## Behavior Example
 
 ```rust
-use runa_engine::runa_core::{
+use runvy_engine::runvy_core::{
     components::{CursorInteractable, SpriteRenderer, Transform},
     input_system::*,
     ocs::{Object, Script, ScriptContext},
@@ -51,7 +51,7 @@ fn create_button() -> Object {
     Object::new("Button")
         .with(Transform::default())
         .with(SpriteRenderer {
-            texture: Some(runa_engine::runa_asset::load_image!("assets/button.png")),
+            texture: Some(runvy_engine::runvy_asset::load_image!("assets/button.png")),
             texture_path: Some("assets/button.png".to_string()),
         })
         .with(interactable)

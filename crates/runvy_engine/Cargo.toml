@@ -1,0 +1,20 @@
+[package]
+name = "runvy_engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+runvy_macros = { path = "../runvy_macros" }
+runvy_ecs = { path = "../runvy_ecs" }
+runvy_app = { path = "../runvy_app" }
+runvy_core = { path = "../runvy_core" }
+runvy_asset = { path = "../runvy_asset" }
+runvy_script_api = { path = "../runvy_script_api" }
+luau = "0.733"
+
+inventory = "0.3"
+serde = { workspace = true }
+serde_json = { workspace = true }
+glam.workspace = true

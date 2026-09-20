@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -15,9 +15,9 @@ This document describes recent UI-related changes introduced to the codebase. Th
 
 Files changed (new behavior)
 ----------------------------
-- crates/runa_render/src/renderer.rs
-- crates/runa_render/src/shaders/ui.wgsl
-- crates/runa_core/src/components/ui/ui_renderer.rs
+- crates/runvy_render/src/renderer.rs
+- crates/runvy_render/src/shaders/ui.wgsl
+- crates/runvy_core/src/components/ui/ui_renderer.rs
 - examples/sandbox_ui/src/main.rs
 
 Short description of changes
@@ -28,7 +28,7 @@ Short description of changes
 - Adjusted shader (ui.wgsl) to handle both regular RGBA textures and grayscale font atlases. If the sampled texture has meaningful alpha, it's treated as an RGBA image; otherwise the red channel is used as a mask (font atlas).
 - Added a heuristic to avoid alpha-edge artifacts for text by choosing appropriate alpha source in shader.
 - Implemented a simple auto-layout in ui_renderer::layout(viewport_size) so nodes obtain sizes and positions automatically (images sized by viewport percent, text sized by font_size heuristics).
-- Updated the sandbox_ui example to rely on engine defaults (RunaApp::run_default) and use automatic layout, simplifying the user's main.rs.
+- Updated the sandbox_ui example to rely on engine defaults (RunvyApp::run_default) and use automatic layout, simplifying the user's main.rs.
 
 How to test
 -----------
@@ -42,9 +42,9 @@ Reverting these changes
 -----------------------
 If you need to revert the functional changes, revert the files listed above. If using git:
 
-    git checkout -- crates/runa_render/src/renderer.rs \
-                   crates/runa_render/src/shaders/ui.wgsl \
-                   crates/runa_core/src/components/ui/ui_renderer.rs \
+    git checkout -- crates/runvy_render/src/renderer.rs \
+                   crates/runvy_render/src/shaders/ui.wgsl \
+                   crates/runvy_core/src/components/ui/ui_renderer.rs \
                    examples/sandbox_ui/src/main.rs
 
 Alternatively, review the docs in this folder for details before rolling back.

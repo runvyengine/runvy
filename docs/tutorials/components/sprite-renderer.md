@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -13,8 +13,8 @@ See ROADMAP.md for the current migration track.
 Attach it during object composition:
 
 ```rust
-use runa_engine::runa_asset::load_image;
-use runa_engine::runa_core::{components::SpriteRenderer, ocs::Object};
+use runvy_engine::runvy_asset::load_image;
+use runvy_engine::runvy_core::{components::SpriteRenderer, ocs::Object};
 
 let object = Object::new("Sprite")
     .with(SpriteRenderer::new(Some(load_image!("assets/player.png"))));
@@ -26,8 +26,8 @@ You can override that through `pixels_per_unit` when you need a different sprite
 ## Player Example
 
 ```rust
-use runa_engine::runa_asset::load_image;
-use runa_engine::runa_core::{
+use runvy_engine::runvy_asset::load_image;
+use runvy_engine::runvy_core::{
     components::{SpriteRenderer, Transform},
     ocs::{Object, Script, ScriptContext},
 };

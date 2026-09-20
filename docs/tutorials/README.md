@@ -1,13 +1,13 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
 
-# Runa Engine Tutorials
+# Runvy Engine Tutorials
 
 These guides assume the current runtime model:
 
@@ -49,7 +49,7 @@ These guides assume the current runtime model:
 Needs to be rewritten to match the current data.
 
 ```rust
-use runa_engine::prelude::*;
+use runvy_engine::prelude::*;
 
 #[derive(Component)]
 struct Health {
@@ -76,9 +76,9 @@ fn main() {
         MyBehavior,
     ));
 
-    let _ = RunaApp::run_with_config(
+    let _ = RunvyApp::run_with_config(
         world_rc,
-        RunaWindowConfig::default(),
+        RunvyWindowConfig::default(),
     );
 }
 ```
@@ -91,4 +91,4 @@ This style keeps:
 - behavior local to scripts
 - editor dependency out of runtime code
 
-It also gives Runa a future path for editor tools without moving the source of truth away from the runtime object model.
+It also gives Runvy a future path for editor tools without moving the source of truth away from the runtime object model.

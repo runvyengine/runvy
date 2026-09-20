@@ -1,14 +1,14 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
 # Renderer Architecture
 
-Runa currently uses a small forward renderer. The runtime world owns objects and
+Runvy currently uses a small forward renderer. The runtime world owns objects and
 components, builds a `RenderQueue` each frame, and the renderer consumes that
 queue without keeping a separate editor/runtime scene copy.
 
@@ -52,7 +52,7 @@ atmosphere aligned to world height instead of screen `uv.y`.
 affects only the visible background brightness.
 
 `WorldAtmosphere` is serialized into world files with a `version` field on the
-world asset. This keeps the scene format ready for future `.runa3d` world-level
+world asset. This keeps the scene format ready for future `.runvy3d` world-level
 environment data.
 
 ## Lighting MVP
@@ -86,7 +86,7 @@ This cap is a renderer constant and can later move into renderer settings.
 
 ## Material Data
 
-`MeshRenderer` exposes a minimal `Material` shape prepared for `.runa3d`:
+`MeshRenderer` exposes a minimal `Material` shape prepared for `.runvy3d`:
 
 ```rust
 pub struct Material {
@@ -123,6 +123,6 @@ final_color = surface_color * lighting + emission
 - Shadows: add shadow map passes per supported light type before the mesh pass.
 - PBR: replace the Lambert fragment function with a BRDF and expand `Material`
   with metallic, roughness, normal, occlusion, and emissive texture slots.
-- `.runa3d`: import mesh vertex colors, material parameters, textures, and
+- `.runvy3d`: import mesh vertex colors, material parameters, textures, and
   optional light nodes into the same runtime components and material structure.
 
