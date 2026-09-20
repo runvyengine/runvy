@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -59,6 +59,6 @@ This document summarizes the larger runtime/editor changes that landed in `0.6.0
 
 - There is still no full pixel-perfect 2D pipeline
 - Runtime pixel snapping is not implemented yet
-- Some warnings remain in `runa_render` and `runa_editor`
+- Some warnings remain in `runvy_render` and `runvy_editor`
 - Prefab/template unification is still incomplete
 

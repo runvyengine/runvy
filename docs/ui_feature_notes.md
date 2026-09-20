@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -29,7 +29,7 @@ Technical details and rationale
 - The engine's world update obtains viewport_size from the active camera and calls layout automatically when canvas.dirty_layout is true.
 
 5) Example adjustments
-- examples/sandbox_ui now uses RunaApp::run_default(world_rc) so app/default config is used (no manual RunaWindowConfig in user main.rs).
+- examples/sandbox_ui now uses RunvyApp::run_default(world_rc) so app/default config is used (no manual RunvyWindowConfig in user main.rs).
 - Example uses auto-layout anchors and positions rather than manually setting computed rects.
 
 Known limitations and next steps

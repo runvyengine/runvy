@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -15,8 +15,8 @@ See ROADMAP.md for the current migration track.
 
 ## Decision
 
-**Freeze `runa_editor` feature development. Focus all effort on the code-first
-Rust API until `runa_core` reaches API stability (target: v0.10).**
+**Freeze `runvy_editor` feature development. Focus all effort on the code-first
+Rust API until `runvy_core` reaches API stability (target: v0.10).**
 
 The editor remains in the workspace as a prototype — it compiles, it launches,
 but it receives no new features. It will be rewritten from scratch once the
@@ -60,7 +60,7 @@ The editor prototype was invaluable. It revealed:
 These lessons are now captured and will inform the editor rewrite when the
 time comes.
 
-## What "Code-First" Means for Runa
+## What "Code-First" Means for Runvy
 
 Code-first means **Rust code is the primary way to build a game**. The engine
 exposes its power through typed, composable, documented APIs — not through
@@ -70,7 +70,7 @@ A great code-first engine should feel like:
 
 ```rust
 // 🎯 TARGET API (not yet implemented — aspirational)
-use runa::prelude::*;
+use runvy::prelude::*;
 
 #[derive(Component)]
 struct Health(f32);
@@ -243,7 +243,7 @@ potential contributors, which matters if you want the project to grow.
   public API noticeably better than last time?"
 - **Examples**: treated as integration tests. Each example exercises
   a different dimension of the API.
-- **CI**: `cargo check --workspace --exclude runa_editor` as the fast path.
+- **CI**: `cargo check --workspace --exclude runvy_editor` as the fast path.
   Editor builds remain optional (`--features editor`).
 
 ### What stays the same
@@ -271,13 +271,13 @@ potential contributors, which matters if you want the project to grow.
 
 The editor freeze is not permanent. Re-evaluate when:
 
-- `runa_core` v0.10 is released on crates.io
+- `runvy_core` v0.10 is released on crates.io
 - The public API has been stable for 2+ minor releases
 - There is community demand (or contributors) for an editor
 - The renderer supports enough features to make an editor useful
   (multi-viewport, PBR preview, asset thumbnails)
 
-At that point, start a clean `runa_editor2` crate with the architecture
+At that point, start a clean `runvy_editor2` crate with the architecture
 lessons from the prototype.
 
 ## Related documents

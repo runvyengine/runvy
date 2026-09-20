@@ -1,14 +1,14 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
 # Collision Components
 
-Runa currently has simple collision detection, not a full physics engine.
+Runvy currently has simple collision detection, not a full physics engine.
 
 Relevant components:
 
@@ -20,7 +20,7 @@ If you want script-facing 2D overlap checks, use `Collider2D`.
 ## Composition Example
 
 ```rust
-use runa_engine::runa_core::{components::{Collider2D, Transform}, ocs::Object};
+use runvy_engine::runvy_core::{components::{Collider2D, Transform}, ocs::Object};
 
 let player = Object::new("Player")
     .with(Transform::default())
@@ -30,7 +30,7 @@ let player = Object::new("Player")
 ## Movement Example
 
 ```rust
-use runa_engine::runa_core::{
+use runvy_engine::runvy_core::{
     components::{Collider2D, Transform},
     glam::Vec3,
     input_system::*,

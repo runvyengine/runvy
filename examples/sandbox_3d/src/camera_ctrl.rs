@@ -1,4 +1,4 @@
-use runa_engine::core::{
+use runvy_engine::core::{
     components::{Camera, Transform},
     ecs::{World, W},
     glam::{Quat, Vec3},
@@ -8,7 +8,7 @@ use runa_engine::core::{
     },
     KeyCode,
 };
-use runa_engine::system;
+use runvy_engine::system;
 
 struct CameraController {
     yaw: f32,

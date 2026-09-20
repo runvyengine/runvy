@@ -1,7 +1,7 @@
 use std::sync::Once;
 
-use runa_engine::{
-    app::{RunaApp, RunaWindowConfig},
+use runvy_engine::{
+    app::{RunvyApp, RunvyWindowConfig},
     core::{components::Camera, console_log, MessageLevel},
     ecs::{self, World},
     system,
@@ -12,8 +12,8 @@ fn main() {
 
     world.spawn((Camera::new_orthographic(32.0, 18.0),));
 
-    let config = RunaWindowConfig {
-        title: "Runa Sandbox".to_string(),
+    let config = RunvyWindowConfig {
+        title: "Runvy Sandbox".to_string(),
         width: 1280,
         height: 720,
         fullscreen: false,
@@ -23,7 +23,7 @@ fn main() {
         luau_types_path: None,
     };
 
-    let _ = RunaApp::run_with_config(world, config);
+    let _ = RunvyApp::run_with_config(world, config);
 }
 
 static INIT: Once = Once::new();

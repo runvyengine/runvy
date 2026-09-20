@@ -1,6 +1,6 @@
-# Contributing to Runa Engine
+# Contributing to Runvy Engine
 
-Thanks for your interest! Runa is a community-driven project, and every
+Thanks for your interest! Runvy is a community-driven project, and every
 contribution — whether a bug report, a doc fix, a performance improvement,
 or a new feature — is very welcome.
 
@@ -9,8 +9,8 @@ or a new feature — is very welcome.
 1. Fork the repo on GitHub.
 2. Clone your fork:
    ```bash
-   git clone https://github.com/RunaLight/runa.git
-   cd runa
+   git clone https://github.com/runvyengine/runvy.git
+   cd runvy
    ```
 3. Build the project:
    ```bash
@@ -25,15 +25,15 @@ or a new feature — is very welcome.
 
 ```
 crates/
-  runa_core/        # Object-Component-Script system, input, audio, rendering API
-  runa_render/      # wgpu renderer (2D sprites, 3D meshes, UI, background)
-  runa_app/         # Window bootstrap and app loop (winit)
-  runa_asset/       # Asset loading (textures, audio, fonts)
-  runa_project/     # Project manifests, world serialization, scaffolding
-  runa_editor/      # Optional egui-based editor
-  runa_engine/      # Umbrella crate for game code
-  runa_macros/      # Derive macros
-  runa_render_api/  # Render command queue (no GPU dependency)
+  runvy_core/        # Object-Component-Script system, input, audio, rendering API
+  runvy_render/      # wgpu renderer (2D sprites, 3D meshes, UI, background)
+  runvy_app/         # Window bootstrap and app loop (winit)
+  runvy_asset/       # Asset loading (textures, audio, fonts)
+  runvy_project/     # Project manifests, world serialization, scaffolding
+  runvy_editor/      # Optional egui-based editor
+  runvy_engine/      # Umbrella crate for game code
+  runvy_macros/      # Derive macros
+  runvy_render_api/  # Render command queue (no GPU dependency)
 examples/
   sandbox/          # Main 2D sandbox
   sandbox_3d/       # 3D example
@@ -77,8 +77,8 @@ Scope: which crate or area
 
 Examples:
 
-- `feat(runa_core): add EventBus subscribe/unsubscribe`
-- `perf(runa_render): pool mesh GPU buffers`
+- `feat(runvy_core): add EventBus subscribe/unsubscribe`
+- `perf(runvy_render): pool mesh GPU buffers`
 - `docs(tutorials): fix Camera::new_perspective signature`
 
 ## Coding Standards

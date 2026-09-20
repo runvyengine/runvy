@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -11,7 +11,7 @@ See ROADMAP.md for the current migration track.
 `Sorting` controls 2D render order independently from spawn order.
 
 ```rust
-use runa_engine::runa_core::{
+use runvy_engine::runvy_core::{
     components::{Sorting, SpriteRenderer},
     ocs::Object,
 };

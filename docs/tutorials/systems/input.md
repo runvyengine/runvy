@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -13,7 +13,7 @@ The input system handles keyboard and mouse input. In the current runtime it als
 ## Keyboard Input
 
 ```rust
-use runa_engine::runa_core::input_system::*;
+use runvy_engine::runvy_core::input_system::*;
 
 if Input::is_key_pressed(KeyCode::KeyW) {
     // continuous action
@@ -27,7 +27,7 @@ if Input::is_key_just_pressed(KeyCode::Space) {
 ## Mouse Input
 
 ```rust
-use runa_engine::runa_core::input_system::*;
+use runvy_engine::runvy_core::input_system::*;
 use winit::event::MouseButton;
 
 if Input::is_mouse_button_just_pressed(MouseButton::Left) {
@@ -44,7 +44,7 @@ if let Some(mouse_pos) = Input::get_mouse_world_position() {
 The current runtime is single-window:
 
 ```rust
-use runa_engine::runa_core::input_system::*;
+use runvy_engine::runvy_core::input_system::*;
 
 set_window_title("Debug View");
 set_fullscreen(true);
@@ -58,7 +58,7 @@ center_window();
 ## Movement Example
 
 ```rust
-use runa_engine::runa_core::{
+use runvy_engine::runvy_core::{
     components::Transform,
     glam::Vec3,
     input_system::*,

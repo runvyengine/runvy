@@ -1,10 +1,10 @@
-use runa_engine::app::{RunaApp, RunaWindowConfig};
-use runa_engine::asset::load_image;
-use runa_engine::core::components::*;
-use runa_engine::core::Vec3;
-use runa_engine::ecs::World;
-use runa_engine::macros::Scriptable;
-use runa_engine::scripting::load_script;
+use runvy_engine::app::{RunvyApp, RunvyWindowConfig};
+use runvy_engine::asset::load_image;
+use runvy_engine::core::components::*;
+use runvy_engine::core::Vec3;
+use runvy_engine::ecs::World;
+use runvy_engine::macros::Scriptable;
+use runvy_engine::scripting::load_script;
 
 fn main() {
     let mut world = World::new();
@@ -20,9 +20,9 @@ fn main() {
         load_script!("scripts/player_move.luau"),
     ));
 
-    // Disable `runa_app`'s own (CWD-relative) `runa.luau` regeneration so it doesn't
+    // Disable `runvy_app`'s own (CWD-relative) `runvy.luau` regeneration so it doesn't
     // overwrite the file this example just wrote above.
-    let config = RunaWindowConfig {
+    let config = RunvyWindowConfig {
         title: "Lua Scripting Test".to_string(),
         width: 1280,
         height: 720,
@@ -32,14 +32,14 @@ fn main() {
         ..Default::default()
     };
 
-    let _ = RunaApp::run_with_config(world, config);
+    let _ = RunvyApp::run_with_config(world, config);
 }
 
-// A unit component (default `::runa_script_api` path — works because `runa_script_api`
+// A unit component (default `::runvy_script_api` path — works because `runvy_script_api`
 // is a transitive dependency available by name).
 
 // A user-defined component written in the *game* crate (which depends only on
-// `runa_engine`). Because `addable` is now the default, a plain `#[derive(Scriptable)]`
+// `runvy_engine`). Because `addable` is now the default, a plain `#[derive(Scriptable)]`
 // is already addable in Lua via `ctx:AddComponent(Speed, { value = 42 })`.
 #[derive(Debug, Clone, Default, Scriptable)]
 #[script(addable)]
@@ -50,21 +50,21 @@ struct Speed {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use runa_engine::core::resources::event::EventBus;
-    use runa_engine::core::resources::input::InputState;
-    use runa_engine::core::resources::Time;
-    use runa_engine::scripting::{script_system, ScriptComponent};
+    use runvy_engine::core::resources::event::EventBus;
+    use runvy_engine::core::resources::input::InputState;
+    use runvy_engine::core::resources::Time;
+    use runvy_engine::scripting::{script_system, ScriptComponent};
 
     #[test]
     fn lua_add_external_component() {
         let mut path = std::env::temp_dir();
         path.push("lua_ext_comp.luau");
         let src = r#"
-            local runa = require("runa")
-            function start(ctx: runa.ScriptContext)
+            local runvy = require("runvy")
+            function start(ctx: runvy.ScriptContext)
                 ctx:AddComponent(Speed, { value = 42 })
             end
-            function update(ctx: runa.ScriptContext)
+            function update(ctx: runvy.ScriptContext)
                 local s = ctx:GetComponent(Speed)
                 captured = s.value
             end
@@ -91,18 +91,18 @@ mod tests {
         let _ = std::fs::remove_file(&path);
     }
 
-    // Regenerates `.runa/runa.luau` for this example and asserts that the engine's
-    // built-in types come through from the committed `runa_base.luau`.
+    // Regenerates `.runvy/runvy.luau` for this example and asserts that the engine's
+    // built-in types come through from the committed `runvy_base.luau`.
     #[test]
-    fn generate_example_runa_luau() {
+    fn generate_example_runvy_luau() {
         let manifest = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR");
-        let p = std::path::Path::new(&manifest).join(".runa/runa.luau");
-        runa_engine::scripting::write_luau_types(&p);
+        let p = std::path::Path::new(&manifest).join(".runvy/runvy.luau");
+        runvy_engine::scripting::write_luau_types(&p);
 
-        let content = std::fs::read_to_string(&p).expect("read generated runa.luau");
+        let content = std::fs::read_to_string(&p).expect("read generated runvy.luau");
         assert!(
             content.contains("export type Transform"),
-            "engine built-ins should come from runa_base.luau (got:\n{content})"
+            "engine built-ins should come from runvy_base.luau (got:\n{content})"
         );
     }
 
@@ -119,8 +119,8 @@ mod tests {
         path.push("lua_sprite_renderer.luau");
         let src = format!(
             r#"
-                local runa = require("runa")
-                function start(ctx: runa.ScriptContext)
+                local runvy = require("runvy")
+                function start(ctx: runvy.ScriptContext)
                     ctx:AddComponent(SpriteRenderer, {{
                         texture_path = "{asset}",
                         pixels_per_unit = 32,
@@ -131,7 +131,7 @@ mod tests {
                         flip_y = false,
                     }})
                 end
-                function update(ctx: runa.ScriptContext) end
+                function update(ctx: runvy.ScriptContext) end
                 return {{ start = start, update = update }}
             "#
         );
@@ -172,11 +172,11 @@ mod tests {
         let mut path = std::env::temp_dir();
         path.push("lua_sprite_animator.luau");
         let src = r#"
-            local runa = require("runa")
-            function start(ctx: runa.ScriptContext)
-                local sheet = runa.sprite_sheet(4, 2)
-                local clipA = runa.sprite_clip("idle", 0, 3, 8, true)
-                local clipB = runa.sprite_clip("run", 4, 7, 12, false)
+            local runvy = require("runvy")
+            function start(ctx: runvy.ScriptContext)
+                local sheet = runvy.sprite_sheet(4, 2)
+                local clipA = runvy.sprite_clip("idle", 0, 3, 8, true)
+                local clipB = runvy.sprite_clip("run", 4, 7, 12, false)
                 ctx:AddComponent(SpriteAnimator, {
                     sheet = sheet,
                     clips = { clipA, clipB },
@@ -185,7 +185,7 @@ mod tests {
                     playing = false,
                 })
             end
-            function update(ctx: runa.ScriptContext) end
+            function update(ctx: runvy.ScriptContext) end
             return { start = start, update = update }
         "#;
         std::fs::write(&path, src).unwrap();
@@ -219,34 +219,34 @@ mod tests {
     // ---- Item 3: every other (non-broken) component's params editable from Luau ----
     #[test]
     fn lua_other_components_editable() {
-        use runa_engine::core::{Quat, Vec2};
+        use runvy_engine::core::{Quat, Vec2};
 
         let mut path = std::env::temp_dir();
         path.push("lua_components.luau");
         let src = r#"
-            local runa = require("runa")
-            function start(ctx: runa.ScriptContext)
+            local runvy = require("runvy")
+            function start(ctx: runvy.ScriptContext)
                 local t = ctx:GetComponent(Transform)
-                t.position = runa.vec3(1, 2, 3)
-                t.rotation = runa.vec4(0, 0, 0, 1)
-                t.scale = runa.vec3(2, 2, 2)
+                t.position = runvy.vec3(1, 2, 3)
+                t.rotation = runvy.vec4(0, 0, 0, 1)
+                t.scale = runvy.vec3(2, 2, 2)
 
                 local c2 = ctx:GetComponent(Collider2D)
                 c2.shape = { type = "Circle", radius = 2.5 }
-                c2.offset = runa.vec2(1, 1)
+                c2.offset = runvy.vec2(1, 1)
                 c2.enabled = false
                 c2.is_trigger = true
                 c2.layer = 7
 
                 local c3 = ctx:GetComponent(Collider3D)
-                c3.shape = { type = "Box", half_size = runa.vec3(1, 2, 3) }
-                c3.offset = runa.vec3(0, 0, 5)
+                c3.shape = { type = "Box", half_size = runvy.vec3(1, 2, 3) }
+                c3.offset = runvy.vec3(0, 0, 5)
                 c3.enabled = false
                 c3.is_trigger = true
                 c3.layer = 9
 
                 local pc = ctx:GetComponent(PhysicsCollision)
-                pc.size = runa.vec2(10, 20)
+                pc.size = runvy.vec2(10, 20)
                 pc.enabled = false
 
                 local s = ctx:GetComponent(Sorting)
@@ -255,11 +255,11 @@ mod tests {
                 s.y_offset = 3.5
 
                 local cam = ctx:GetComponent(Camera)
-                cam.position = runa.vec3(5, 6, 7)
-                cam.target = runa.vec3(0, 0, 0)
-                cam.up = runa.vec3(0, 1, 0)
+                cam.position = runvy.vec3(5, 6, 7)
+                cam.target = runvy.vec3(0, 0, 0)
+                cam.up = runvy.vec3(0, 1, 0)
                 cam.projection = "Perspective"
-                cam.orthographic_size = runa.vec2(40, 30)
+                cam.orthographic_size = runvy.vec2(40, 30)
                 cam.near = 0.5
                 cam.far = 2000
                 cam.fov = 1.2
@@ -303,12 +303,12 @@ mod tests {
                 ci.is_pressed = true
                 ci.is_hovered = true
                 ci.was_hovered = false
-                ci.bounds_size = runa.vec3(2, 3, 4)
+                ci.bounds_size = runvy.vec3(2, 3, 4)
 
                 local odi = ctx:GetComponent(ObjectDefinitionInstance)
                 odi.object_id = "enemy_01"
             end
-            function update(ctx: runa.ScriptContext) end
+            function update(ctx: runvy.ScriptContext) end
             return { start = start, update = update }
         "#;
         std::fs::write(&path, src).unwrap();

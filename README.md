@@ -1,18 +1,18 @@
 <!--
 ⚠️ README IS BEING REWRITTEN
 
-The old OCS was removed in favor of `runa_ecs`. See ROADMAP.md.
+The old OCS was removed in favor of `runvy_ecs`. See ROADMAP.md.
 -->
 
-# Runa Engine
+# Runvy Engine
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE-MIT)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE-APACHE)
 [![Rust](https://img.shields.io/badge/rust-1.75+-orange.svg)](https://www.rust-lang.org)
 
-[![RunaGameEngine](TheRunaGameEngine.png)](https://github.com/RunaLight/runa)
+[![RunvyGameEngine](TheRunvyGameEngine.png)](https://github.com/runvyengine/runvy)
 
-Runa Engine is an experimental **code-first** Rust game engine. The primary way to build a game is through typed, composable Rust APIs. An optional editor exists as a prototype and is currently frozen — all effort goes into stabilising the core engine first.
+Runvy Engine is an experimental **code-first** Rust game engine. The primary way to build a game is through typed, composable Rust APIs. An optional editor exists as a prototype and is currently frozen — all effort goes into stabilising the core engine first.
 
 > Status: pre-alpha. APIs are still evolving. The runtime is usable for prototypes and internal tools, but the engine is not production-ready yet.
 >
@@ -20,20 +20,20 @@ Runa Engine is an experimental **code-first** Rust game engine. The primary way 
 > as a prototype until the core API stabilises (target: v0.10).
 > See [`docs/architecture/strategic-direction.md`](docs/architecture/strategic-direction.md).
 
-## What Runa Is
+## What Runvy Is
 
-Runa is a workspace, not just one crate. It currently includes:
+Runvy is a workspace, not just one crate. It currently includes:
 
-- `runa_ecs`: archetype-based ECS (BlobVec storage, Fetch GAT queries, `#[system]` auto-registration)
-- `runa_core`: components, input, audio, console
-- `runa_app`: runtime app loop and window bootstrap
-- `runa_render`: `wgpu` renderer
-- `runa_asset`: asset loading helpers
-- `runa_engine`: umbrella crate for normal game-side usage
+- `runvy_ecs`: archetype-based ECS (BlobVec storage, Fetch GAT queries, `#[system]` auto-registration)
+- `runvy_core`: components, input, audio, console
+- `runvy_app`: runtime app loop and window bootstrap
+- `runvy_render`: `wgpu` renderer
+- `runvy_asset`: asset loading helpers
+- `runvy_engine`: umbrella crate for normal game-side usage
 
 The runtime is code-first:
 
-- `runa_ecs::World` stores entities in archetypes
+- `runvy_ecs::World` stores entities in archetypes
 - components are plain Rust structs
 - behavior is written with `#[system]` functions
 - entities are composed explicitly in Rust code
@@ -43,7 +43,7 @@ The runtime is code-first:
 
 ### Runtime
 
-- archetype-based ECS with `runa_ecs::World`
+- archetype-based ECS with `runvy_ecs::World`
 - `#[system]` auto-registration via `inventory`
 - `world.spawn((...))` for composing components
 - typed queries with `world.query::<(R<A>, R<B>)>()` and `world.query_mut::<W<A>>()`
@@ -90,20 +90,20 @@ The runtime is code-first:
 cargo run -p sandbox
 ```
 
-### Add Runa to a new project
+### Add Runvy to a new project
 
-Current latest public tag: [`v0.7.2`](https://github.com/RunaLight/runa/releases/tag/v0.7.6)
+Current latest public tag: [`v0.7.6`](https://github.com/runvyengine/runvy/releases/tag/v0.7.6)
 
 ```toml
 [dependencies]
-runa_engine = { git = "https://github.com/RunaLight/runa.git", tag = "v0.7.6" }
+runvy_engine = { git = "https://github.com/runvyengine/runvy.git", tag = "v0.7.6" }
 ```
 
 If you want to track the repository head instead of a tag:
 
 ```toml
 [dependencies]
-runa_engine = { git = "https://github.com/RunaLight/runa.git", branch = "main" }
+runvy_engine = { git = "https://github.com/runvyengine/runvy.git", branch = "main" }
 ```
 
 ## Quick Guide
@@ -111,13 +111,13 @@ runa_engine = { git = "https://github.com/RunaLight/runa.git", branch = "main" }
 Minimal startup:
 
 ```rust
-use runa_engine::{
+use runvy_engine::{
     prelude::*,
-    runa_app::{RunaApp, RunaWindowConfig},
+    runvy_app::{RunvyApp, RunvyWindowConfig},
 };
 
 fn main() {
-    let mut world = runa_engine::runa_ecs::World::new();
+    let mut world = runvy_engine::runvy_ecs::World::new();
 
     world.spawn((
         Transform::default(),
@@ -125,7 +125,7 @@ fn main() {
         Camera::new_orthographic(320.0, 180.0),
     ));
 
-    let config = RunaWindowConfig {
+    let config = RunvyWindowConfig {
         title: "My Game".to_string(),
         width: 1280,
         height: 720,
@@ -135,34 +135,34 @@ fn main() {
         window_icon: None,
     };
 
-    let _ = RunaApp::run_with_world(config, world);
+    let _ = RunvyApp::run_with_world(config, world);
 }
 ```
 
 Typical gameplay object:
 
 ```rust
-use runa_engine::prelude::*;
-use runa_engine::runa_core::components::*;
-use runa_engine::system;
+use runvy_engine::prelude::*;
+use runvy_engine::runvy_core::components::*;
+use runvy_engine::system;
 
 struct PlayerController {
     speed: f32,
 }
 
 #[system]
-fn player_update(world: &mut runa_ecs::World) {
+fn player_update(world: &mut runvy_ecs::World) {
     let dt = 1.0 / 60.0;
-    for (_, (transform,)) in world.query_mut::<runa_ecs::W<Transform>>() {
-        transform.position += runa_engine::runa_core::glam::Vec3::X * 0.25 * dt;
+    for (_, (transform,)) in world.query_mut::<runvy_ecs::W<Transform>>() {
+        transform.position += runvy_engine::runvy_core::glam::Vec3::X * 0.25 * dt;
     }
 }
 
-fn setup(world: &mut runa_ecs::World) {
+fn setup(world: &mut runvy_ecs::World) {
     world.spawn((
         Transform::default(),
         Camera::new_orthographic(320.0, 180.0),
-        SpriteRenderer::new(Some(runa_asset::load_image!("assets/art/player.png"))),
+        SpriteRenderer::new(Some(runvy_asset::load_image!("assets/art/player.png"))),
     ));
 }
 ```
@@ -173,7 +173,7 @@ fn setup(world: &mut runa_ecs::World) {
 2. Define your components as plain structs.
 3. Write behavior with `#[system] fn my_system(world: &mut World)`.
 4. Spawn entities with `world.spawn((...))`.
-5. Run the app with `RunaApp::run_with_world(config, world)`.
+5. Run the app with `RunvyApp::run_with_world(config, world)`.
 
 No registration step is needed — just `world.spawn((components))`.
 
@@ -188,7 +188,7 @@ src/
 assets/
 ```
 
-Good practice in Runa:
+Good practice in Runvy:
 
 - keep entity composition in typed factory functions
 - keep behavior in `#[system]` functions
@@ -214,9 +214,9 @@ Good practice in Runa:
 
 ## Repository
 
-- GitHub: <https://github.com/RunaLight/runa>
-- Releases: <https://github.com/RunaLight/runa/releases>
-- Tags: <https://github.com/RunaLight/runa/tags>
+- GitHub: <https://github.com/runvyengine/runvy>
+- Releases: <https://github.com/runvyengine/runvy/releases>
+- Tags: <https://github.com/runvyengine/runvy/tags>
 
 ## License
 

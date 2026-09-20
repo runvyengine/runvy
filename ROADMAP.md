@@ -2,27 +2,27 @@
 ⚠️ ROADMAP IS BEING REWRITTEN — ECS MIGRATION IN PROGRESS
 
 The old OCS (Object/Component/System) has been removed.
-The engine now uses `runa_ecs` exclusively.
+The engine now uses `runvy_ecs` exclusively.
 -->
 
-# Runa Engine Roadmap — ECS Migration Track
+# Runvy Engine Roadmap — ECS Migration Track
 
-> **Active migration (v0.6+):** `runa_core::ocs` → `runa_ecs` crate.
+> **Active migration (v0.6+):** `runvy_core::ocs` → `runvy_ecs` crate.
 > Old OCS documentation is outdated and has been removed.
 
 ## Immediate (current session)
 
-- [x] `runa_ecs` crate: BlobVec, Archetype, World, Query (Fetch GAT), Bundle macro
+- [x] `runvy_ecs` crate: BlobVec, Archetype, World, Query (Fetch GAT), Bundle macro
 - [x] `#[system]` proc macro with inventory-based auto-registration
 - [x] Scheduler integrated into `App` — auto-runs in fixed-timestep loop
-- [x] `runa_engine` re-exports `runa_ecs`; `runa_app` hosts ECS World + Scheduler
+- [x] `runvy_engine` re-exports `runvy_ecs`; `runvy_app` hosts ECS World + Scheduler
 - [x] Port Script-based logic to `#[system]` functions
-- [x] Remove `runa_core::ocs` and `runa_core::codefirst`
+- [x] Remove `runvy_core::ocs` and `runvy_core::codefirst`
 
 ## Next
 
-- [ ] Move component defs from `runa_core::components` to plain structs
-- [ ] Add command queue (deferred spawn/despawn) to `runa_ecs::World`
+- [ ] Move component defs from `runvy_core::components` to plain structs
+- [ ] Add command queue (deferred spawn/despawn) to `runvy_ecs::World`
 
 ## Performance invariants (new ECS)
 

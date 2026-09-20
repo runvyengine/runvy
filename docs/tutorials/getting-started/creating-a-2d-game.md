@@ -1,6 +1,6 @@
 # Creating a 2D Game
 
-This guide shows the current recommended Runa pattern for a small 2D game.
+This guide shows the current recommended Runvy pattern for a small 2D game.
 Applies to version 0.7.6 and later.
 
 ## 1. Create the application
@@ -12,16 +12,16 @@ Start with an empty application in `main.rs`:
 ```rust
 // main.rs
 
-use runa_core::runa_ecs::World;
-use runa_engine::runa_app::{RunaApp, RunaWindowConfig};
+use runvy_core::runvy_ecs::World;
+use runvy_engine::runvy_app::{RunvyApp, RunvyWindowConfig};
 
 fn main() {
     // Create the world
     let mut world = World::new();
 
     // Configure the window
-    let config = RunaWindowConfig {
-        title: "Small 2D scene in Runa".to_string(),
+    let config = RunvyWindowConfig {
+        title: "Small 2D scene in Runvy".to_string(),
         width: 1280,
         height: 720,
         fullscreen: false,
@@ -30,12 +30,12 @@ fn main() {
         window_icon: None,
     };
 
-    let _ = RunaApp::run_with_config(world, config);
+    let _ = RunvyApp::run_with_config(world, config);
 }
 ```
 
 `run_with_config` takes the world first and the config second. For quick
-tests you can also use `RunaApp::run_default(world)` — it creates a default
+tests you can also use `RunvyApp::run_default(world)` — it creates a default
 window and config for you.
 
 ## 2. Character movement controller
@@ -82,13 +82,13 @@ guide) and query for it — then the system only affects the entities you choose
 ```rust
 // main.rs
 
-use runa_core::components::{Camera, SpriteRenderer, Transform};
-use runa_core::glam::Vec3;
-use runa_core::input::InputState;
-use runa_core::runa_ecs::{World, W};
-use runa_core::KeyCode;
-use runa_engine::runa_app::{RunaApp, RunaWindowConfig};
-use runa_engine::system;
+use runvy_core::components::{Camera, SpriteRenderer, Transform};
+use runvy_core::glam::Vec3;
+use runvy_core::input::InputState;
+use runvy_core::runvy_ecs::{World, W};
+use runvy_core::KeyCode;
+use runvy_engine::runvy_app::{RunvyApp, RunvyWindowConfig};
+use runvy_engine::system;
 
 #[system]
 fn player_movement(world: &mut World) {
@@ -117,7 +117,7 @@ fn main() {
     let mut world = World::new();
 
     // Load the character sprite
-    let texture = runa_asset::load_image!("assets/art/Charactert.png");
+    let texture = runvy_asset::load_image!("assets/art/Charactert.png");
 
     // Spawn the character
     world.spawn((
@@ -132,8 +132,8 @@ fn main() {
     // Spawn the camera
     world.spawn((Camera::new_orthographic(32.0, 18.0),));
 
-    let config = RunaWindowConfig {
-        title: "Runa Sandbox".to_string(),
+    let config = RunvyWindowConfig {
+        title: "Runvy Sandbox".to_string(),
         width: 1280,
         height: 720,
         fullscreen: false,
@@ -142,7 +142,7 @@ fn main() {
         window_icon: None,
     };
 
-    let _ = RunaApp::run_with_config(world, config);
+    let _ = RunvyApp::run_with_config(world, config);
 }
 ```
 

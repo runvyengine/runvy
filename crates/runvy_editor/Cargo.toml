@@ -1,0 +1,32 @@
+[package]
+name = "runvy_editor"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+egui = "0.34.1"
+egui-winit = "0.34.1"
+egui-wgpu = "0.34.1"
+winit.workspace = true
+wgpu.workspace = true
+pollster.workspace = true
+serde = { version = "1.0", features = ["derive"] }
+ron = "0.8"
+dirs = "5.0"
+image = { version = "0.25", features = ["png"] }
+rfd = "0.14"
+resvg = "0.45"
+
+runvy_core = { path = "../runvy_core" }
+runvy_render = { path = "../runvy_render" }
+runvy_render_api = { path = "../runvy_render_api" }
+runvy_asset = { path = "../runvy_asset" }
+runvy_project = { path = "../runvy_project" }
+runvy_engine = { path = "../runvy_engine" }
+
+[build-dependencies]
+image = { version = "0.25", features = ["png", "ico"] }
+ico = "0.4"
+winres = "0.1"

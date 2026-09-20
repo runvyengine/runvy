@@ -1,8 +1,8 @@
 <!--
 ?? DEPRECATED � ECS Migration in Progress
 
-This documentation refers to the old OCS (runa_core::ocs) system.
-The engine is migrating to a new archetype-based ECS (runa_ecs crate).
+This documentation refers to the old OCS (runvy_core::ocs) system.
+The engine is migrating to a new archetype-based ECS (runvy_ecs crate).
 
 See ROADMAP.md for the current migration track.
 -->
@@ -17,7 +17,7 @@ targeting large tilemaps (100x100+) and general 3D scenes.
 
 ### 1. GPU Mesh Cache (`renderer.rs`)
 
-**File:** `crates/runa_render/src/renderer.rs`
+**File:** `crates/runvy_render/src/renderer.rs`
 
 `mesh_gpu_cache: HashMap<u64, (Buffer, Buffer)>` keyed by `Arc::as_ptr(&mesh.inner)`.
 Vertex/index buffers created once per unique `Arc<Mesh>`, reused across frames.
@@ -46,7 +46,7 @@ Consecutive same-texture, same-order sprites merged into one batch entry
 
 ### 5. Tile Batching (`world.rs`, `render_command.rs`)
 
-Moved `InstanceData` from `renderer.rs` to `runa_render_api::command`.
+Moved `InstanceData` from `renderer.rs` to `runvy_render_api::command`.
 Added `TileBatch` render command variant. `world.rs` groups tiles by texture
 pointer into `Vec<InstanceData>` and issues one `TileBatch` per texture per
 layer instead of 10k individual `Tile` commands.
@@ -102,15 +102,15 @@ is outside the frustum.
 
 ## Files Modified
 
-- `crates/runa_render_api/src/command.rs` — `InstanceData`, `TileBatch`
-- `crates/runa_render_api/src/queue.rs` — `draw_tiles_batch()`
-- `crates/runa_render/src/renderer.rs` — mesh cache, uniform buffers, sprite/tile
+- `crates/runvy_render_api/src/command.rs` — `InstanceData`, `TileBatch`
+- `crates/runvy_render_api/src/queue.rs` — `draw_tiles_batch()`
+- `crates/runvy_render/src/renderer.rs` — mesh cache, uniform buffers, sprite/tile
   batching, per-frame Vec reuse
-- `crates/runa_render/src/pipelines/pipeline.rs` — `InstanceData` import
-- `crates/runa_core/src/ocs/world.rs` — HashMap grouping, pre-allocate, culling
-- `crates/runa_core/src/components/tilemap.rs` — `generation` field
-- `crates/runa_core/src/components/mesh_renderer.rs` — `Vertex3D`, `Mesh`, `Material`
-- `crates/runa_project/src/world_asset.rs` — tilemap `generation: 0`
+- `crates/runvy_render/src/pipelines/pipeline.rs` — `InstanceData` import
+- `crates/runvy_core/src/ocs/world.rs` — HashMap grouping, pre-allocate, culling
+- `crates/runvy_core/src/components/tilemap.rs` — `generation` field
+- `crates/runvy_core/src/components/mesh_renderer.rs` — `Vertex3D`, `Mesh`, `Material`
+- `crates/runvy_project/src/world_asset.rs` — tilemap `generation: 0`
 
 ## Performance
 
