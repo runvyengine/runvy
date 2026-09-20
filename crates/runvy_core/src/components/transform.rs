@@ -1,6 +1,6 @@
 use glam::{Quat, Vec3};
 
-#[derive(Clone, Debug, Default, Copy, runvy_macros::Scriptable)]
+#[derive(Clone, Debug, Copy, runvy_macros::Scriptable)]
 #[script(crate = "::runvy_script_api", builtin)]
 pub struct Transform {
     pub position: Vec3,
@@ -12,6 +12,22 @@ pub struct Transform {
     pub previous_position: Vec3,
     #[script(skip)]
     pub previous_rotation: Quat,
+}
+
+impl Default for Transform {
+    fn default() -> Self {
+        Self {
+            position: Default::default(),
+            rotation: Default::default(),
+            scale: Vec3 {
+                x: 1.,
+                y: 1.,
+                z: 1.,
+            },
+            previous_position: Default::default(),
+            previous_rotation: Default::default(),
+        }
+    }
 }
 
 impl Transform {
