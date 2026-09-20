@@ -571,23 +571,6 @@ impl Tilemap {
     }
 }
 
-/// Rendering Component for Tilemap.
-#[derive(Clone, Scriptable)]
-#[script(crate = "::runvy_script_api", builtin)]
-pub struct TilemapRenderer;
-
-impl TilemapRenderer {
-    pub fn new() -> Self {
-        Self
-    }
-}
-
-impl Default for TilemapRenderer {
-    fn default() -> Self {
-        Self
-    }
-}
-
 #[derive(Clone)]
 pub struct TilemapAtlas {
     pub texture: Arc<TextureAsset>,

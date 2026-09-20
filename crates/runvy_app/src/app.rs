@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 
 use runvy_core::components::EMPTY_TILE;
 use runvy_core::components::{
-    BackgroundMode, Camera, MeshRenderer, Sorting, SpriteRenderer, Tilemap, TilemapRenderer,
+    BackgroundMode, Camera, MeshRenderer, Sorting, SpriteRenderer, Tilemap, 
     Transform, UiRenderer, WorldAtmosphere,
 };
 use runvy_core::resources::input::{self, InputState};
@@ -134,9 +134,9 @@ impl<'window> App<'window> {
 
         let Self { ref mut queue, .. } = self;
 
-        for (_entity, (transform, tm, _renderer)) in
+        for (_entity, (transform, tm)) in
             self.world
-                .query::<(R<Transform>, R<Tilemap>, R<TilemapRenderer>)>()
+                .query::<(R<Transform>, R<Tilemap>)>()
         {
             let Some(atlas) = tm.atlas.as_ref() else {
                 continue;

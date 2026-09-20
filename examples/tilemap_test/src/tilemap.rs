@@ -1,7 +1,7 @@
 use runvy_engine::{
     asset::load_image,
     core::{
-        components::{Tilemap, TilemapLayer, TilemapRenderer, Transform},
+        components::{Tilemap, TilemapLayer, Transform},
         glam::USizeVec2,
     },
     ecs::World,
@@ -26,5 +26,5 @@ pub fn spawn_tilemap(world: &mut World) -> u64 {
     }
     tm.add_layer(tml);
 
-    world.spawn((Transform::default(), tm, TilemapRenderer::new()))
+    world.spawn((Transform::default(), tm))
 }

@@ -50,7 +50,6 @@ pub use sprite_renderer::{SpriteRenderer, DEFAULT_SPRITE_PIXELS_PER_UNIT};
 pub use tilemap::TileId;
 pub use tilemap::Tilemap;
 pub use tilemap::TilemapLayer;
-pub use tilemap::TilemapRenderer;
 pub use tilemap::UvRect;
 pub use tilemap::EMPTY_TILE;
 pub use transform::Transform;
