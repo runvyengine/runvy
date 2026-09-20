@@ -15,6 +15,7 @@ mod sorting;
 mod sprite_animator;
 mod sprite_renderer;
 mod tilemap;
+mod timer;
 mod transform;
 mod ui_renderer;
 mod world_atmosphere;
@@ -55,4 +56,5 @@ pub use tilemap::EMPTY_TILE;
 pub use transform::Transform;
 pub use world_atmosphere::{BackgroundMode, WorldAtmosphere};
 
+pub use timer::Timer;
 pub use ui_renderer::UiRenderer;
