@@ -141,6 +141,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
+name = "audio_test"
+version = "0.8.0-pre.4"
+dependencies = [
+ "runvy_engine",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2398,6 +2405,7 @@ dependencies = [
  "runvy_render_api",
  "runvy_script_api",
  "serde",
+ "serde_json",
  "winit",
 ]
 
@@ -2549,14 +2557,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sandbox_soundtest"
-version = "0.8.0-pre.4"
-dependencies = [
- "runvy_engine",
-]
-
-[[package]]
-name = "sandbox_ui"
+name = "scenemanager_test"
 version = "0.8.0-pre.4"
 dependencies = [
  "runvy_engine",
@@ -3072,6 +3073,13 @@ name = "typeid"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc7d623258602320d5c55d1bc22793b57daff0ec7efc270ea7d55ce1d5f5471c"
+
+[[package]]
+name = "ui_test"
+version = "0.8.0-pre.4"
+dependencies = [
+ "runvy_engine",
+]
 
 [[package]]
 name = "unicode-ident"

@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    # Crates:
     "crates/runvy_macros",
     "crates/runvy_engine",
     "crates/runvy_app",
@@ -11,13 +12,15 @@ members = [
     # "crates/runvy_editor",
     "crates/runvy_render_api",
     "crates/runvy_script_api",
+    # Examples:
+    "examples/audio_test",
     "examples/command_queue_test",
+    "examples/console_test",
     "examples/lua_scripting_test",
     "examples/sandbox",
-    "examples/sandbox_soundtest",
     "examples/sandbox_3d",
-    "examples/sandbox_ui",
-    "examples/console_test",
+    "examples/scenemanager_test",
+    "examples/ui_test",
     "examples/tilemap_test",
 ]
 exclude = ["templates"]

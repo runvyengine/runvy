@@ -1,6 +1,9 @@
 use std::time::Instant;
 
-use runvy_core::{resources::input::InputState, resources::Time, Console, EventBus};
+use runvy_core::{
+    resources::{input::InputState, SceneManager, Time},
+    Console, EventBus,
+};
 use winit::{
     error::EventLoopError,
     event_loop::{ControlFlow, EventLoop},
@@ -73,4 +76,5 @@ fn init_resources(world: &mut runvy_ecs::World) {
     world.init_resource::<Console>();
     world.init_resource::<EventBus>();
     world.init_resource::<InputState>();
+    world.init_resource::<SceneManager>();
 }
