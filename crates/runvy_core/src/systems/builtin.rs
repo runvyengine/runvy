@@ -4,12 +4,12 @@ use crate::collision3d::intersects_world as intersects_world_3d;
 use crate::components::{
     AudioListener, AudioSource, Collider2D, Collider3D, CursorInteractable, OnTriggerEnter2D,
     OnTriggerEnter3D, OnTriggerExit2D, OnTriggerExit3D, OnTriggerStay2D, OnTriggerStay3D,
-    SpriteAnimator, SpriteRenderer, Transform, WorldCollider2D, WorldCollider3D,
+    SpriteAnimator, SpriteRenderer, Timer, Transform, WorldCollider2D, WorldCollider3D,
 };
 use crate::resources::event::EventBus;
 use crate::resources::input::InputState;
 use crate::resources::{CollisionTracker2D, CollisionTracker3D, Time};
-use runvy_ecs::{Entity, R, W};
+use runvy_ecs::{Entity, World, R, W};
 use runvy_macros::system;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Mutex, OnceLock};
@@ -33,7 +33,7 @@ fn audio_engine() -> &'static Mutex<Option<AudioEngine>> {
 }
 
 #[system(Update, "crate")]
-pub fn cursor_interaction(world: &mut runvy_ecs::World) {
+pub fn cursor_interaction(world: &mut World) {
     let world_pos = match world
         .get_resource_mut::<InputState>()
         .get_mouse_world_position()
@@ -60,7 +60,7 @@ pub fn cursor_interaction(world: &mut runvy_ecs::World) {
 }
 
 #[system(Update, "crate")]
-pub fn audio_system(world: &mut runvy_ecs::World) {
+pub fn audio_system(world: &mut World) {
     let mut guard = audio_engine().lock().unwrap();
     let Some(engine) = guard.as_mut() else {
         return;
@@ -93,12 +93,12 @@ pub fn audio_system(world: &mut runvy_ecs::World) {
 }
 
 #[system(Update, "crate")]
-pub fn eventbus_system(world: &mut runvy_ecs::World) {
+pub fn eventbus_system(world: &mut World) {
     world.get_resource_mut::<EventBus>().process();
 }
 
 #[system(Update, "crate")]
-pub fn sprite_animator_system(world: &mut runvy_ecs::World) {
+pub fn sprite_animator_system(world: &mut World) {
     let dt = world.get_resource::<Time>().delta;
     for (_, (animator, sprite)) in world.query_mut::<(W<SpriteAnimator>, W<SpriteRenderer>)>() {
         let uv = animator.tick(dt);
@@ -113,7 +113,7 @@ struct Collider2DSnapshot {
 }
 
 #[system(Update, "crate")]
-pub fn collision_2d_system(world: &mut runvy_ecs::World) {
+pub fn collision_2d_system(world: &mut World) {
     // ── Pass 1: read. Copy each enabled collider into a Vec, resolved to
     //    world space exactly once. The world borrow ends here. ──────────────
     let mut colliders: Vec<Collider2DSnapshot> = Vec::new();
@@ -195,7 +195,7 @@ struct Collider3DSnapshot {
 }
 
 #[system(Update, "crate")]
-pub fn collision_3d_system(world: &mut runvy_ecs::World) {
+pub fn collision_3d_system(world: &mut World) {
     let mut colliders: Vec<Collider3DSnapshot> = Vec::new();
 
     for (entity, (t, c)) in world.query::<(R<Transform>, R<Collider3D>)>() {
@@ -262,6 +262,44 @@ pub fn collision_3d_system(world: &mut runvy_ecs::World) {
             0 => bus.emit(OnTriggerEnter3D { this, other }),
             1 => bus.emit(OnTriggerExit3D { this, other }),
             _ => bus.emit(OnTriggerStay3D { this, other }),
+        }
+    }
+}
+
+#[system(Start, "crate")]
+pub fn timer_start_system(world: &mut World) {
+    for (_, timer) in world.query_mut::<W<Timer>>() {
+        if timer.autostart {
+            timer.autostart = false;
+            timer.restart();
+        }
+    }
+}
+
+#[system(Update, "crate")]
+pub fn timer_system(world: &mut World) {
+    let dt = world.get_resource::<Time>().delta;
+
+    for (_, timer) in world.query_mut::<W<Timer>>() {
+        if !timer.running {
+            return;
+        }
+
+        timer.remaining -= dt.max(0.0);
+
+        if timer.remaining <= 0.0 {
+            timer.running = false;
+            timer.times_fired += 1;
+
+            if let Some(cb) = timer.on_timeout_mut() {
+                if let Ok(f) = cb.get_mut() {
+                    f();
+                }
+            }
+
+            if timer.cyclical {
+                timer.restart();
+            }
         }
     }
 }

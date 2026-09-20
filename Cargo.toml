@@ -22,6 +22,7 @@ members = [
     "examples/scenemanager_test",
     "examples/ui_test",
     "examples/tilemap_test",
+    "examples/timer_test",
 ]
 exclude = ["templates"]
 resolver = "2"
