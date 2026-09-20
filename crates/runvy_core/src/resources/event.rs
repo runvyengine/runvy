@@ -2,7 +2,7 @@ use std::any::{Any, TypeId};
 use std::collections::HashMap;
 
 pub trait Event: Send + 'static {}
-type EventCallback = Box<dyn Fn(&dyn Any) + Send>;
+pub type EventCallback = Box<dyn Fn(&dyn Any) + Send>;
 
 /// Global event bus (singleton, like `InputState` / `AudioEngine`).
 ///
