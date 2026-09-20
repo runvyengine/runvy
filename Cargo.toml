@@ -8,7 +8,7 @@ members = [
     "crates/runvy_render",
     "crates/runvy_asset",
     # "crates/runvy_project",
-    # "crates/runvy_editor",
+    "crates/runvy_editor",
     "crates/runvy_render_api",
     "crates/runvy_script_api",
     "examples/command_queue_test",
