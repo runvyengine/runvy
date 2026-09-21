@@ -2,7 +2,7 @@ use runvy_engine::app::{RunvyApp, RunvyWindowConfig};
 use runvy_engine::core::components::{Mesh, MeshRenderer, Transform};
 use runvy_engine::core::glam::{Quat, Vec3};
 use runvy_engine::core::resources::Time;
-use runvy_engine::ecs::{World, R, W};
+use runvy_engine::ecs::{QueryMut, Res, World, R, W};
 use runvy_engine::system;
 
 use crate::camera_ctrl::spawn_camera;
@@ -10,9 +10,9 @@ use crate::camera_ctrl::spawn_camera;
 mod camera_ctrl;
 
 #[system(Update)]
-fn rotate_cubes(world: &mut World) {
-    let dt = world.get_resource::<Time>().delta;
-    for (_, (transform, _mesh)) in world.query_mut::<(W<Transform>, R<MeshRenderer>)>() {
+fn rotate_cubes(time: Res<Time>, q: QueryMut<(W<Transform>, R<MeshRenderer>)>) {
+    let dt = time.delta;
+    for (_, (transform, _mesh)) in q {
         transform.rotation *= Quat::from_rotation_y(0.5 * dt);
     }
 }

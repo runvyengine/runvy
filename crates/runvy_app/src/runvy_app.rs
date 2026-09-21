@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use runvy_core::{
-    resources::{input::InputState, SceneManager, Time},
+    resources::{input::InputState, CollisionTracker2D, CollisionTracker3D, SceneManager, Time},
     Console, EventBus,
 };
 use winit::{
@@ -27,6 +27,7 @@ impl RunvyApp {
 
         init_resources(&mut world);
         scheduler.run_stage(runvy_ecs::Stage::Start, &mut world);
+        world.take_start_request();
 
         let mut app = App {
             window: None,
@@ -77,4 +78,6 @@ fn init_resources(world: &mut runvy_ecs::World) {
     world.init_resource::<EventBus>();
     world.init_resource::<InputState>();
     world.init_resource::<SceneManager>();
+    world.init_resource::<CollisionTracker2D>();
+    world.init_resource::<CollisionTracker3D>();
 }

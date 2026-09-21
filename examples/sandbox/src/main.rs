@@ -3,18 +3,26 @@ use runvy_engine::core::components::{Camera, SpriteRenderer, Transform};
 use runvy_engine::core::glam::Vec3;
 use runvy_engine::core::resources::{input::InputState, Time};
 use runvy_engine::core::KeyCode;
-use runvy_engine::ecs::W;
-use runvy_engine::prelude::{console_log, MessageLevel};
+use runvy_engine::ecs::{QueryMut, Res, ResMut, W};
+use runvy_engine::prelude::{Console, MessageLevel};
 use runvy_engine::system;
 use runvy_engine::{asset, ecs};
 
 #[system]
-fn player_movement(world: &mut ecs::World) {
+fn player_movement(
+    time: Res<Time>,
+    mut input: ResMut<InputState>,
+    mut console: ResMut<Console>,
+    q: QueryMut<W<Transform>>,
+) {
     let speed = 8.0;
-    let dt = world.get_resource::<Time>().delta;
-    let mut input = world.delete_resource::<InputState>();
+    let dt = time.delta;
+    let mut first_pos = None;
 
-    for (_, transform) in world.query_mut::<W<Transform>>() {
+    for (_, transform) in q {
+        if first_pos.is_none() {
+            first_pos = Some(transform.position);
+        }
         let mut dir = Vec3::ZERO;
         if input.is_key_pressed(KeyCode::KeyW) {
             dir.y += 1.0;
@@ -32,14 +40,11 @@ fn player_movement(world: &mut ecs::World) {
     }
 
     if input.is_key_just_pressed(KeyCode::KeyF) {
-        let pos = world
-            .query::<ecs::R<Transform>>()
-            .next()
-            .map(|(_, t)| t.position);
-        console_log!(world, MessageLevel::Info, "Player at {:?}", pos);
+        console.add_message_with_level(
+            format!("Player at {:?}", first_pos),
+            MessageLevel::Info,
+        );
     }
-
-    world.add_resource(input);
 }
 
 fn main() {

@@ -2,8 +2,8 @@ use std::sync::Once;
 
 use runvy_engine::{
     app::{RunvyApp, RunvyWindowConfig},
-    core::{components::Camera, console_log, MessageLevel},
-    ecs::{self, World},
+    core::{components::Camera, Console, MessageLevel},
+    ecs::{self, ResMut},
     system,
 };
 
@@ -29,11 +29,11 @@ fn main() {
 static INIT: Once = Once::new();
 
 #[system]
-fn test(world: &mut World) {
+fn test(mut console: ResMut<Console>) {
     INIT.call_once(|| {
-        console_log!(world, "Default message test");
-        console_log!(world, MessageLevel::Info, "Info message test");
-        console_log!(world, MessageLevel::Warning, "Warning message test");
-        console_log!(world, MessageLevel::Error, "Error message test");
+        console.add_message_with_level("Default message test", MessageLevel::Info);
+        console.add_message_with_level("Info message test", MessageLevel::Info);
+        console.add_message_with_level("Warning message test", MessageLevel::Warning);
+        console.add_message_with_level("Error message test", MessageLevel::Error);
     });
 }

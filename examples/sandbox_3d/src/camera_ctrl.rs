@@ -1,6 +1,6 @@
 use runvy_engine::core::{
     components::{Camera, Transform},
-    ecs::{World, W},
+    ecs::{QueryMut, Res, ResMut, World, W},
     glam::{Quat, Vec3},
     resources::{
         input::{lock_cursor, show_cursor, InputState},
@@ -29,17 +29,19 @@ impl CameraController {
 }
 
 #[system]
-fn camera_controller_system(world: &mut World) {
+fn camera_controller_system(
+    time: Res<Time>,
+    mut input: ResMut<InputState>,
+    q: QueryMut<(W<Transform>, W<CameraController>)>,
+) {
     show_cursor(false);
     lock_cursor(true);
-    let dt = world.get_resource::<Time>().delta;
-
-    let mut input = world.delete_resource::<InputState>();
+    let dt = time.delta;
 
     let mouse = input.mouse_delta;
     let (dx, dy) = (mouse.0, mouse.1);
 
-    for (_, (transform, ctrl)) in world.query_mut::<(W<Transform>, W<CameraController>)>() {
+    for (_, (transform, ctrl)) in q {
         ctrl.yaw -= dx * ctrl.sensitivity;
         ctrl.pitch -= dy * ctrl.sensitivity;
         ctrl.pitch = ctrl.pitch.clamp(-89.0, 89.0);
@@ -70,8 +72,6 @@ fn camera_controller_system(world: &mut World) {
 
         transform.position += move_dir.normalize_or_zero() * ctrl.speed * dt;
     }
-
-    world.add_resource(input);
 }
 
 pub fn spawn_camera(world: &mut World) -> u64 {

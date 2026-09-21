@@ -229,14 +229,15 @@ impl<'window> App<'window> {
             .map(|(e, s)| (e, s.order))
             .collect();
 
-        let mut input = self.world.delete_resource::<InputState>();
-
-        for (_, ui) in self.world.query_mut::<W<UiRenderer>>() {
-            ui.layout(viewport, camera_ref);
-            ui.process_interaction(camera_ref, &mut input);
+        let (resources, entities) = self.world.split();
+        let mut input = resources.delete::<InputState>();
+        {
+            for (_, ui) in entities.query_mut::<W<UiRenderer>>() {
+                ui.layout(viewport, camera_ref);
+                ui.process_interaction(camera_ref, &mut input);
+            }
+            resources.add(input);
         }
-
-        self.world.add_resource(input);
 
         let mut ui_with_transform: Vec<u64> = Vec::new();
         for (entity, (ui, transform)) in self.world.query::<(R<UiRenderer>, R<Transform>)>() {
@@ -464,38 +465,45 @@ impl<'window> ApplicationHandler for App<'window> {
         let update_start = Instant::now();
 
         while self.accumulator >= BASE_TIMESTEP {
-            let mut input_state = self.world.delete_resource::<InputState>();
             {
-                input_state.camera = self
-                    .world
-                    .query::<(runvy_ecs::R<Camera>, runvy_ecs::R<Transform>)>()
-                    .next()
-                    .map(|(_, (c, t))| c.resolved_with_transform(Some(t)))
-                    .or_else(|| {
-                        self.world
-                            .query::<runvy_ecs::R<Camera>>()
-                            .next()
-                            .map(|(_, c)| *c)
-                    });
-            }
+                let (resources, entities) = self.world.split();
 
-            self.world.add_resource(input_state);
+                // Resources and components can now be touched side by side: no
+                // more delete_resource -> query -> add_resource juggling.
+                let mut input_state = resources.delete::<InputState>();
+                {
+                    input_state.camera = entities
+                        .query::<(runvy_ecs::R<Camera>, runvy_ecs::R<Transform>)>()
+                        .next()
+                        .map(|(_, (c, t))| c.resolved_with_transform(Some(t)))
+                        .or_else(|| {
+                            entities
+                                .query::<runvy_ecs::R<Camera>>()
+                                .next()
+                                .map(|(_, c)| *c)
+                        });
+                }
 
-            for (_, transform) in self.world.query_mut::<runvy_ecs::W<Transform>>() {
-                transform.prepare_for_update();
-            }
+                resources.add(input_state);
 
-            {
-                let time = self.world.get_resource_mut::<Time>();
-                time.tick += 1;
-                time.unscaled_delta = BASE_TIMESTEP;
-                time.delta = BASE_TIMESTEP * time.time_scale;
-                time.unscaled_elapsed += time.unscaled_delta;
-                time.elapsed += time.delta;
+                for (_, transform) in entities.query_mut::<runvy_ecs::W<Transform>>() {
+                    transform.prepare_for_update();
+                }
+
+                {
+                    let time = resources.get_mut::<Time>();
+                    time.tick += 1;
+                    time.unscaled_delta = BASE_TIMESTEP;
+                    time.delta = BASE_TIMESTEP * time.time_scale;
+                    time.unscaled_elapsed += time.unscaled_delta;
+                    time.elapsed += time.delta;
+                }
             }
 
             self.scheduler
                 .run_stage(runvy_ecs::Stage::Update, &mut self.world);
+
+            self.scheduler.run_start_if_requested(&mut self.world);
 
             self.world.get_resource_mut::<InputState>().update_frame();
 

@@ -9,7 +9,7 @@ use crate::components::{
 use crate::resources::event::EventBus;
 use crate::resources::input::InputState;
 use crate::resources::{CollisionTracker2D, CollisionTracker3D, Time};
-use runvy_ecs::{Entity, World, R, W};
+use runvy_ecs::{Entity, Query, QueryMut, Res, ResMut, R, W};
 use runvy_macros::system;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Mutex, OnceLock};
@@ -33,20 +33,17 @@ fn audio_engine() -> &'static Mutex<Option<AudioEngine>> {
 }
 
 #[system(Update, "crate")]
-pub fn cursor_interaction(world: &mut World) {
-    let world_pos = match world
-        .get_resource_mut::<InputState>()
-        .get_mouse_world_position()
-    {
+pub fn cursor_interaction(
+    mut input: ResMut<InputState>,
+    q: QueryMut<(W<CursorInteractable>, R<Transform>)>,
+) {
+    let world_pos = match input.get_mouse_world_position() {
         Some(p) => p,
         None => return,
     };
-    let mouse_down = world
-        .get_resource_mut::<InputState>()
-        .is_mouse_button_just_pressed(MouseButton::Left);
+    let mouse_down = input.is_mouse_button_just_pressed(MouseButton::Left);
 
-    for (_, (interactable, transform)) in world.query_mut::<(W<CursorInteractable>, R<Transform>)>()
-    {
+    for (_, (interactable, transform)) in q {
         interactable.is_hovered = interactable.contains_point(world_pos, transform.position);
         if mouse_down && interactable.is_hovered {
             if let Some(cb) = interactable.on_click_mut() {
@@ -60,13 +57,16 @@ pub fn cursor_interaction(world: &mut World) {
 }
 
 #[system(Update, "crate")]
-pub fn audio_system(world: &mut World) {
+pub fn audio_system(
+    sources: QueryMut<W<AudioSource>>,
+    listeners: Query<(R<AudioListener>, R<Transform>)>,
+) {
     let mut guard = audio_engine().lock().unwrap();
     let Some(engine) = guard.as_mut() else {
         return;
     };
 
-    for (_, source) in world.query_mut::<W<AudioSource>>() {
+    for (_, source) in sources {
         if source.play_requested {
             source.sound_id = engine.play(source);
             source.play_requested = false;
@@ -82,7 +82,7 @@ pub fn audio_system(world: &mut World) {
         }
     }
 
-    for (_, (listener, transform)) in world.query::<(R<AudioListener>, R<Transform>)>() {
+    for (_, (listener, transform)) in listeners {
         if listener.active {
             engine.set_listener(transform.position, transform.rotation, listener.volume);
         }
@@ -93,14 +93,17 @@ pub fn audio_system(world: &mut World) {
 }
 
 #[system(Update, "crate")]
-pub fn eventbus_system(world: &mut World) {
-    world.get_resource_mut::<EventBus>().process();
+pub fn eventbus_system(mut bus: ResMut<EventBus>) {
+    bus.process();
 }
 
 #[system(Update, "crate")]
-pub fn sprite_animator_system(world: &mut World) {
-    let dt = world.get_resource::<Time>().delta;
-    for (_, (animator, sprite)) in world.query_mut::<(W<SpriteAnimator>, W<SpriteRenderer>)>() {
+pub fn sprite_animator_system(
+    time: Res<Time>,
+    q: QueryMut<(W<SpriteAnimator>, W<SpriteRenderer>)>,
+) {
+    let dt = time.delta;
+    for (_, (animator, sprite)) in q {
         let uv = animator.tick(dt);
         sprite.uv_rect = uv;
     }
@@ -113,12 +116,16 @@ struct Collider2DSnapshot {
 }
 
 #[system(Update, "crate")]
-pub fn collision_2d_system(world: &mut World) {
+pub fn collision_2d_system(
+    q: Query<(R<Transform>, R<Collider2D>)>,
+    mut tracker: ResMut<CollisionTracker2D>,
+    mut bus: ResMut<EventBus>,
+) {
     // ── Pass 1: read. Copy each enabled collider into a Vec, resolved to
-    //    world space exactly once. The world borrow ends here. ──────────────
+    //    world space exactly once. The query borrow ends here. ──────────────
     let mut colliders: Vec<Collider2DSnapshot> = Vec::new();
 
-    for (entity, (t, c)) in world.query::<(R<Transform>, R<Collider2D>)>() {
+    for (entity, (t, c)) in q {
         let collider = *c;
         if !collider.enabled {
             continue;
@@ -145,14 +152,12 @@ pub fn collision_2d_system(world: &mut World) {
     }
 
     // ── Pass 3: write. Diff against last frame, emit trigger events. ────────
-    world.init_resource::<CollisionTracker2D>();
     let is_trigger: HashMap<Entity, bool> = colliders
         .iter()
         .map(|c| (c.entity, c.collider.is_trigger))
         .collect();
 
     let events: Vec<(Entity, Entity, u8)> = {
-        let tracker = world.get_resource_mut::<CollisionTracker2D>();
         let prev = &tracker.contacts;
         let mut out = Vec::new();
         for (entity, others) in &current_contacts {
@@ -173,7 +178,6 @@ pub fn collision_2d_system(world: &mut World) {
         out
     };
 
-    let bus = world.get_resource_mut::<EventBus>();
     for (this, other, kind) in events {
         let trigger = is_trigger.get(&this).copied().unwrap_or(false)
             || is_trigger.get(&other).copied().unwrap_or(false);
@@ -195,10 +199,14 @@ struct Collider3DSnapshot {
 }
 
 #[system(Update, "crate")]
-pub fn collision_3d_system(world: &mut World) {
+pub fn collision_3d_system(
+    q: Query<(R<Transform>, R<Collider3D>)>,
+    mut tracker: ResMut<CollisionTracker3D>,
+    mut bus: ResMut<EventBus>,
+) {
     let mut colliders: Vec<Collider3DSnapshot> = Vec::new();
 
-    for (entity, (t, c)) in world.query::<(R<Transform>, R<Collider3D>)>() {
+    for (entity, (t, c)) in q {
         let collider = *c;
         if !collider.enabled {
             continue;
@@ -223,14 +231,12 @@ pub fn collision_3d_system(world: &mut World) {
         }
     }
 
-    world.init_resource::<CollisionTracker3D>();
     let is_trigger: HashMap<Entity, bool> = colliders
         .iter()
         .map(|c| (c.entity, c.collider.is_trigger))
         .collect();
 
     let events: Vec<(Entity, Entity, u8)> = {
-        let tracker = world.get_resource_mut::<CollisionTracker3D>();
         let prev = &tracker.contacts;
         let mut out = Vec::new();
         for (entity, others) in &current_contacts {
@@ -251,7 +257,6 @@ pub fn collision_3d_system(world: &mut World) {
         out
     };
 
-    let bus = world.get_resource_mut::<EventBus>();
     for (this, other, kind) in events {
         let trigger = is_trigger.get(&this).copied().unwrap_or(false)
             || is_trigger.get(&other).copied().unwrap_or(false);
@@ -267,8 +272,8 @@ pub fn collision_3d_system(world: &mut World) {
 }
 
 #[system(Start, "crate")]
-pub fn timer_start_system(world: &mut World) {
-    for (_, timer) in world.query_mut::<W<Timer>>() {
+pub fn timer_start_system(q: QueryMut<W<Timer>>) {
+    for (_, timer) in q {
         if timer.autostart {
             timer.autostart = false;
             timer.restart();
@@ -277,12 +282,12 @@ pub fn timer_start_system(world: &mut World) {
 }
 
 #[system(Update, "crate")]
-pub fn timer_system(world: &mut World) {
-    let dt = world.get_resource::<Time>().delta;
+pub fn timer_system(time: Res<Time>, q: QueryMut<W<Timer>>) {
+    let dt = time.delta;
 
-    for (_, timer) in world.query_mut::<W<Timer>>() {
+    for (_, timer) in q {
         if !timer.running {
-            return;
+            continue;
         }
 
         timer.remaining -= dt.max(0.0);
