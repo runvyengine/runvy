@@ -1,32 +1,54 @@
 use runvy_engine::app::{RunvyApp, RunvyWindowConfig};
-use runvy_engine::core::components::{MeshRenderer, Transform};
+use runvy_engine::core::components::{MeshRenderer, Timer, Transform};
 use runvy_engine::core::glam::Quat;
-use runvy_engine::core::resources::{Scene, SceneManager, Time};
-use runvy_engine::ecs::{World, R, W};
+use runvy_engine::core::resources::{SceneManager, Time};
+use runvy_engine::ecs::{QueryMut, Res, World, R, W};
 use runvy_engine::system;
 
-use crate::scenes::FirstScene;
+use crate::camera_ctrl::SavedCamera;
+use crate::scenes::{FirstScene, SecondScene};
 
 mod camera_ctrl;
 mod scenes;
 
 #[system(Update)]
-fn rotate_cubes(world: &mut World) {
-    let dt = world.get_resource::<Time>().delta;
-    for (_, (transform, _mesh)) in world.query_mut::<(W<Transform>, R<MeshRenderer>)>() {
+fn rotate_cubes(time: Res<Time>, q: QueryMut<(W<Transform>, R<MeshRenderer>)>) {
+    let dt = time.delta;
+    for (_, (transform, _mesh)) in q {
         transform.rotation *= Quat::from_rotation_y(0.5 * dt);
     }
+}
+
+#[system(Update)]
+fn auto_switch_scene(world: &mut World) {
+    let fired = world
+        .query::<R<Timer>>()
+        .any(|(_, timer)| timer.times_fired > 0);
+
+    if !fired {
+        return;
+    }
+
+    let next = match world.get_resource::<SceneManager>().active() {
+        Some("first_scene") => "second_scene",
+        _ => "first_scene",
+    };
+
+    let mut scenes = world.delete_resource::<SceneManager>();
+    scenes.switch_to(next, world);
+    world.add_resource(scenes);
 }
 
 fn main() {
     let mut world = World::new();
 
-    let first_s = FirstScene {};
-    first_s.build(&mut world);
+    world.init_resource::<SavedCamera>();
 
     let mut sm = SceneManager::default();
+    sm.register(FirstScene {});
+    sm.register(SecondScene {});
 
-    sm.switch_to(first_s.name(), &mut world);
+    sm.switch_to("first_scene", &mut world);
 
     world.add_resource(sm);
 
