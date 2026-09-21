@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
     parse::Parse, parse::ParseStream, parse_macro_input, Attribute, Data, DeriveInput, Expr, Field,
-    Fields, Ident, ItemFn, ItemStruct, LitStr, Token, Type,
+    Fields, FnArg, Ident, ItemFn, ItemStruct, LitStr, Token, Type,
 };
 
 /// `#[system(Stage)]` / `#[system(Stage, "crate")]` argument.
@@ -32,22 +32,154 @@ pub fn system(attr: TokenStream, item: TokenStream) -> TokenStream {
     let block = &input.block;
     let name = &sig.ident;
 
+    if sig.generics.params.iter().next().is_some() {
+        panic!("#[system] functions must not be generic");
+    }
+
     let (stage_ident, crate_path) = parse_sys_attr(proc_macro2::TokenStream::from(attr));
     let crate_path_ts: proc_macro2::TokenStream = crate_path
         .parse()
         .unwrap_or_else(|_| "::runvy_engine".parse().unwrap());
 
-    TokenStream::from(quote! {
-        #vis #sig #block
+    // Classic exclusive system: a single `&mut World` / `&World` parameter.
+    // Such functions are registered as-is.
+    let arg_tys: Vec<&Type> = sig
+        .inputs
+        .iter()
+        .map(|arg| match arg {
+            FnArg::Typed(pt) => &*pt.ty,
+            FnArg::Receiver(_) => panic!("#[system] does not support methods with `self`"),
+        })
+        .collect();
+    let is_exclusive = arg_tys.len() == 1 && is_world_ref(arg_tys[0]);
 
-        #crate_path_ts::ecs::inventory::submit! {
-            #crate_path_ts::ecs::SystemDescriptor {
-                name: stringify!(#name),
-                func: #name,
-                stage: #crate_path_ts::ecs::Stage::#stage_ident,
+    let out = if is_exclusive {
+        quote! {
+            #vis #sig #block
+
+            #crate_path_ts::ecs::inventory::submit! {
+                #crate_path_ts::ecs::SystemDescriptor {
+                    name: stringify!(#name),
+                    func: #name,
+                    stage: #crate_path_ts::ecs::Stage::#stage_ident,
+                }
             }
         }
-    })
+    } else {
+        // Param system: `fn(Res<T>, QueryMut<...>, Commands, ...)`. A hidden
+        // `fn(&mut World)` wrapper builds an `UnsafeWorldCell`, resolves the
+        // `SystemParam` tuple (with access conflict validation) and forwards
+        // the borrowed values to the user function.
+        let wrapper = quote::format_ident!("__{}_run", name);
+        let arg_idents: Vec<proc_macro2::Ident> = (0..arg_tys.len())
+            .map(|i| quote::format_ident!("__param{}", i))
+            .collect();
+
+        let call = if arg_tys.is_empty() {
+            quote! { let _ = world; #name(); }
+        } else {
+            // Token streams are assembled manually (not with `#(..)+`
+            // repetition, which quote refuses to expand over a comma
+            // separator inside a `proc-macro` crate).
+            let args_ts = join_comma(&arg_idents);
+            let tuple_pattern = tuple_of(&arg_idents);
+            let tuple_type = tuple_of_items(arg_tys.iter().map(|t| quote! { #t }));
+            let cell_ty = quote! { <#crate_path_ts::ecs::UnsafeWorldCell>::new(world) };
+            let params_ty = quote! { <#tuple_type as #crate_path_ts::ecs::SystemParam>::get(__cell) };
+
+            quote! {
+                let __cell = unsafe { #cell_ty };
+                let __params = unsafe { #params_ty };
+                let #tuple_pattern = __params;
+                #name(#args_ts);
+            }
+        };
+
+        quote! {
+            #vis #sig #block
+
+            #[doc(hidden)]
+            fn #wrapper(world: &mut #crate_path_ts::ecs::World) {
+                #call
+            }
+
+            #crate_path_ts::ecs::inventory::submit! {
+                #crate_path_ts::ecs::SystemDescriptor {
+                    name: stringify!(#name),
+                    func: #wrapper,
+                    stage: #crate_path_ts::ecs::Stage::#stage_ident,
+                }
+            }
+        }
+    };
+    TokenStream::from(out)
+}
+
+/// Whether `ty` is a shared/mutable reference whose final path segment is
+/// `World` — i.e. a classic exclusive system parameter.
+fn is_world_ref(ty: &Type) -> bool {
+    if let Type::Reference(r) = ty {
+        if let Type::Path(p) = &*r.elem {
+            if let Some(seg) = p.path.segments.last() {
+                return seg.ident == "World";
+            }
+        }
+    }
+    false
+}
+
+/// Joins a sequence of token-producing items with commas: `a, b, c, `.
+///
+/// Built without `quote` repetition because repetition over a separator does
+/// not expand inside a `proc-macro` crate.
+fn join_comma<'a, I>(iter: I) -> proc_macro2::TokenStream
+where
+    I: IntoIterator<Item = &'a proc_macro2::Ident>,
+{
+    let mut ts = proc_macro2::TokenStream::new();
+    for (i, id) in iter.into_iter().enumerate() {
+        if i > 0 {
+            ts.extend(comma());
+        }
+        ts.extend(quote! { #id });
+    }
+    ts
+}
+
+/// Wraps a sequence of item token-streams in parentheses with a comma after
+/// each, so the result is a valid tuple type: `( A, B, )`.
+fn tuple_of_items(parts: impl IntoIterator<Item = proc_macro2::TokenStream>) -> proc_macro2::TokenStream {
+    let mut body = proc_macro2::TokenStream::new();
+    for part in parts {
+        body.extend(part);
+        body.extend(comma());
+    }
+    let group = proc_macro2::Group::new(proc_macro2::Delimiter::Parenthesis, body);
+    let mut ts = proc_macro2::TokenStream::new();
+    ts.extend([proc_macro2::TokenTree::from(group)]);
+    ts
+}
+
+fn tuple_of(idents: &[proc_macro2::Ident]) -> proc_macro2::TokenStream {
+    let mut body = proc_macro2::TokenStream::new();
+    for (i, id) in idents.iter().enumerate() {
+        if i > 0 {
+            body.extend(comma());
+        }
+        body.extend(quote! { #id });
+    }
+    body.extend(comma());
+    let group = proc_macro2::Group::new(proc_macro2::Delimiter::Parenthesis, body);
+    let mut ts = proc_macro2::TokenStream::new();
+    ts.extend([proc_macro2::TokenTree::from(group)]);
+    ts
+}
+
+fn comma() -> proc_macro2::TokenStream {
+    proc_macro2::TokenStream::from(proc_macro2::TokenTree::Punct(proc_macro2::Punct::new(
+        ',',
+        proc_macro2::Spacing::Alone,
+    )))
 }
 
 /// Parse the `#[system(...)]` argument into `(stage_ident, crate_path)`.
@@ -594,3 +726,5 @@ fn doc_block(attrs: &[Attribute], indent: &str) -> String {
     }
     out
 }
+
+

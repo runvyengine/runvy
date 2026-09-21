@@ -9,6 +9,10 @@ thread_local! {
 
 pub struct CommandQueue;
 
+/// Bevy-style alias for [`CommandQueue`] so `#[system]` functions can spell the
+/// parameter as `Commands`.
+pub type Commands = CommandQueue;
+
 impl CommandQueue {
     pub fn spawn(&self, bundle: impl Bundle + 'static) {
         let closure = move |world: &mut World| {

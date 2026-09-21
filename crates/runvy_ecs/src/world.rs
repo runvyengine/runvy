@@ -11,20 +11,24 @@ pub(crate) struct Location {
     pub row: u32,
 }
 
-pub struct World {
+/// All entity data: the archetypes, the type-key → archetype index and the
+/// per-entity location map.
+///
+/// This is structurally disjoint from [`ResourceStore`], which is what allows
+/// [`World::split`] to lend out both halves at the same time — resources and
+/// components never borrow-conflict.
+pub struct EntityStore {
     pub archetypes: Vec<Archetype>,
-    resources: HashMap<TypeId, Box<dyn Any>>,
     archetype_by_key: HashMap<Vec<TypeId>, ArchetypeId>,
     next_archetype_id: u32,
     entity_location: HashMap<Entity, Location>,
     next_entity: u64,
 }
 
-impl World {
+impl EntityStore {
     pub fn new() -> Self {
         Self {
             archetypes: Vec::new(),
-            resources: HashMap::new(),
             archetype_by_key: HashMap::new(),
             next_archetype_id: 0,
             entity_location: HashMap::new(),
@@ -264,9 +268,10 @@ impl World {
         }
     }
 
+    /// Clears every entity and archetype, resetting the id counter. Resources
+    /// are intentionally left untouched (see [`crate::world::ResourceStore`]).
     pub fn clear(&mut self) {
         self.archetypes.clear();
-        self.resources.clear();
         self.archetype_by_key.clear();
         self.next_archetype_id = 0;
         self.entity_location.clear();
@@ -297,52 +302,251 @@ impl World {
         self.archetype_by_key.insert(key.to_vec(), id);
         id
     }
+}
 
-    /// Adds a resource of type `T` to the world.
+impl Default for EntityStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Type-erased store of singleton resources.
+///
+/// Kept structurally separate from the entity data inside [`World`] so that the
+/// two halves can be borrowed independently via [`World::split`].
+pub struct ResourceStore {
+    map: HashMap<TypeId, Box<dyn Any>>,
+}
+
+impl ResourceStore {
+    pub fn new() -> Self {
+        Self {
+            map: HashMap::new(),
+        }
+    }
+
+    /// Adds a resource of type `T` to the store.
     ///
     /// # Panics
-    /// Panics if a resource of type `T` is already present in the world.
-    pub fn add_resource<T: 'static>(&mut self, resource: T) {
+    /// Panics if a resource of type `T` is already present.
+    pub fn add<T: 'static>(&mut self, resource: T) {
         let key = TypeId::of::<T>();
 
-        if self.resources.contains_key(&key) {
+        if self.map.contains_key(&key) {
             panic!("Resource {} already added.", any::type_name::<T>());
         }
 
-        self.resources.insert(key, Box::new(resource));
+        self.map.insert(key, Box::new(resource));
     }
 
-    pub fn delete_resource<T: 'static>(&mut self) -> T {
+    /// Adds a resource of type `T`, returning `false` (and keeping the value)
+    /// if a resource of type `T` is already present. Never panics.
+    pub fn try_add<T: 'static>(&mut self, resource: T) -> bool {
         let key = TypeId::of::<T>();
-        self.resources
+        if self.map.contains_key(&key) {
+            return false;
+        }
+        self.map.insert(key, Box::new(resource));
+        true
+    }
+
+    /// Removes and returns the resource of type `T`.
+    ///
+    /// # Panics
+    /// Panics if the resource of type `T` is not present.
+    pub fn delete<T: 'static>(&mut self) -> T {
+        self.try_delete::<T>()
+            .unwrap_or_else(|| panic!("Resource {} not found.", any::type_name::<T>()))
+    }
+
+    /// Removes and returns the resource of type `T`, or `None` if absent.
+    pub fn try_delete<T: 'static>(&mut self) -> Option<T> {
+        let key = TypeId::of::<T>();
+        self.map
             .remove(&key)
             .and_then(|b| b.downcast::<T>().ok())
             .map(|b| *b)
+    }
+
+    /// Returns an immutable borrow of the resource of type `T`.
+    ///
+    /// # Panics
+    /// Panics if the resource of type `T` is not present.
+    pub fn get<T: 'static>(&self) -> &T {
+        self.try_get::<T>()
             .unwrap_or_else(|| panic!("Resource {} not found.", any::type_name::<T>()))
     }
 
-    pub fn get_resource<T: 'static>(&self) -> &T {
+    /// Returns an immutable borrow of the resource of type `T`, or `None` if absent.
+    pub fn try_get<T: 'static>(&self) -> Option<&T> {
         let key = TypeId::of::<T>();
-        self.resources
-            .get(&key)
-            .and_then(|b| b.downcast_ref::<T>())
+        self.map.get(&key).and_then(|b| b.downcast_ref::<T>())
+    }
+
+    /// Returns a mutable borrow of the resource of type `T`.
+    ///
+    /// # Panics
+    /// Panics if the resource of type `T` is not present.
+    pub fn get_mut<T: 'static>(&mut self) -> &mut T {
+        self.try_get_mut::<T>()
             .unwrap_or_else(|| panic!("Resource {} not found.", any::type_name::<T>()))
     }
 
-    pub fn get_resource_mut<T: 'static>(&mut self) -> &mut T {
+    /// Returns a mutable borrow of the resource of type `T`, or `None` if absent.
+    pub fn try_get_mut<T: 'static>(&mut self) -> Option<&mut T> {
         let key = TypeId::of::<T>();
-        self.resources
-            .get_mut(&key)
-            .and_then(|b| b.downcast_mut::<T>())
-            .unwrap_or_else(|| panic!("Resource {} not found.", any::type_name::<T>()))
+        self.map.get_mut(&key).and_then(|b| b.downcast_mut::<T>())
     }
 
     /// Inserts the default value of `T` into the resource store
     /// if a resource of type `T` is not already present.
-    pub fn init_resource<T: Default + 'static>(&mut self) {
-        self.resources
+    pub fn init<T: Default + 'static>(&mut self) {
+        self.map
             .entry(TypeId::of::<T>())
             .or_insert_with(|| Box::new(T::default()));
+    }
+
+    /// Returns a raw, const pointer to the resource of type `T`, or `None` if absent.
+    ///
+    /// Useful for reaching resources through split borrows (see
+    /// [`World::split`]). The caller is responsible for keeping the borrow
+    /// within the borrow of `self`.
+    pub fn get_raw<T: 'static>(&self) -> Option<*const T> {
+        self.try_get::<T>().map(|v| v as *const T)
+    }
+
+    /// Returns a raw, mutable pointer to the resource of type `T`, or `None` if absent.
+    ///
+    /// The caller is responsible for keeping the borrow within the borrow of
+    /// `self` and for not aliasing other references to the same resource.
+    pub fn get_raw_mut<T: 'static>(&mut self) -> Option<*mut T> {
+        self.try_get_mut::<T>().map(|v| v as *mut T)
+    }
+}
+
+impl Default for ResourceStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+pub struct World {
+    pub resources: ResourceStore,
+    pub entities: EntityStore,
+    start_pending: bool,
+}
+
+impl World {
+    pub fn new() -> Self {
+        Self {
+            resources: ResourceStore::new(),
+            entities: EntityStore::new(),
+            start_pending: false,
+        }
+    }
+
+    /// Splits the world into its two structurally disjoint halves: resources and
+    /// entity storage. Because the halves never overlap, borrows taken from each
+    /// half can coexist — so you can read a resource while mutably querying
+    /// components, without the "double borrow" dance:
+    ///
+    /// ```ignore
+    /// let (resources, entities) = world.split();
+    /// let dt = resources.get::<Time>().delta;
+    /// for (_, (t,)) in entities.query_mut::<(W<Transform>,)>() {
+    ///     t.position += Vec3::X * dt;
+    /// }
+    /// ```
+    pub fn split(&mut self) -> (&mut ResourceStore, &mut EntityStore) {
+        (&mut self.resources, &mut self.entities)
+    }
+
+    // ─── Entity API ──────────────────────────────────────────
+
+    pub fn spawn<B: Bundle>(&mut self, bundle: B) -> Entity {
+        self.entities.spawn(bundle)
+    }
+
+    pub fn despawn(&mut self, entity: Entity) -> bool {
+        self.entities.despawn(entity)
+    }
+
+    pub fn get<T: 'static>(&self, entity: Entity) -> Option<&T> {
+        self.entities.get(entity)
+    }
+
+    pub fn get_mut<T: 'static>(&mut self, entity: Entity) -> Option<&mut T> {
+        self.entities.get_mut(entity)
+    }
+
+    pub fn add_component<T: 'static>(&mut self, entity: Entity, value: T) -> bool {
+        self.entities.add_component(entity, value)
+    }
+
+    pub fn remove_component<T: 'static>(&mut self, entity: Entity) -> Option<T> {
+        self.entities.remove_component(entity)
+    }
+
+    pub fn clear(&mut self) {
+        self.entities.clear();
+        self.start_pending = true;
+    }
+
+    /// Requests another run of the `Start` stage, e.g. after resetting the
+    /// world for a new scene.
+    pub fn request_start(&mut self) {
+        self.start_pending = true;
+    }
+
+    /// Clears and returns the pending `Start` request.
+    pub fn take_start_request(&mut self) -> bool {
+        std::mem::take(&mut self.start_pending)
+    }
+
+    pub fn contains(&self, entity: Entity) -> bool {
+        self.entities.contains(entity)
+    }
+
+    pub fn entity_count(&self) -> usize {
+        self.entities.entity_count()
+    }
+
+    // ─── Resource API ────────────────────────────────────────
+
+    pub fn add_resource<T: 'static>(&mut self, resource: T) {
+        self.resources.add(resource)
+    }
+
+    pub fn try_add_resource<T: 'static>(&mut self, resource: T) -> bool {
+        self.resources.try_add(resource)
+    }
+
+    pub fn delete_resource<T: 'static>(&mut self) -> T {
+        self.resources.delete()
+    }
+
+    pub fn try_delete_resource<T: 'static>(&mut self) -> Option<T> {
+        self.resources.try_delete()
+    }
+
+    pub fn get_resource<T: 'static>(&self) -> &T {
+        self.resources.get()
+    }
+
+    pub fn try_get_resource<T: 'static>(&self) -> Option<&T> {
+        self.resources.try_get()
+    }
+
+    pub fn get_resource_mut<T: 'static>(&mut self) -> &mut T {
+        self.resources.get_mut()
+    }
+
+    pub fn try_get_resource_mut<T: 'static>(&mut self) -> Option<&mut T> {
+        self.resources.try_get_mut()
+    }
+
+    pub fn init_resource<T: Default + 'static>(&mut self) {
+        self.resources.init::<T>()
     }
 }
 
@@ -355,6 +559,7 @@ impl Default for World {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::W;
 
     #[derive(Debug, PartialEq, Default)]
     struct A {
@@ -398,5 +603,29 @@ mod tests {
     fn add_component_nonexistent_entity() {
         let mut w = World::new();
         assert!(!w.add_component(123, A { v: 1 }));
+    }
+
+    #[test]
+    fn split_lends_resources_and_entities_independently() {
+        #[derive(Default)]
+        struct Time {
+            delta: f32,
+        }
+
+        let mut w = World::new();
+        w.spawn((A { v: 1 },));
+        w.add_resource(Time { delta: 0.5 });
+
+        {
+            let (resources, entities) = w.split();
+            let dt = resources.get::<Time>().delta;
+            for (_, a) in entities.query_mut::<W<A>>() {
+                a.v += dt as i32;
+            }
+            assert!(resources.try_get::<Time>().is_some());
+            assert!(!resources.try_add(Time { delta: 1.0 }));
+        }
+
+        assert_eq!(w.get::<A>(1).unwrap().v, 1);
     }
 }
