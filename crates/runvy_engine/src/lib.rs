@@ -1,6 +1,5 @@
 mod engine;
 pub mod prelude;
-pub mod scene;
 
 pub use runvy_app as app;
 pub use runvy_asset as asset;

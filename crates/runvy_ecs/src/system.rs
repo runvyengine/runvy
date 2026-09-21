@@ -143,10 +143,58 @@ impl Scheduler {
         }
         apply_commands(world);
     }
+
+    /// Runs the `Start` stage if a re-run was requested (see `World::clear`).
+    /// Returns `true` when the stage ran.
+    pub fn run_start_if_requested(&mut self, world: &mut World) -> bool {
+        if world.take_start_request() {
+            self.run_stage(Stage::Start, world);
+            true
+        } else {
+            false
+        }
+    }
 }
 
 impl Default for Scheduler {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    static START_RUNS: AtomicUsize = AtomicUsize::new(0);
+
+    fn bump_start(_world: &mut World) {
+        START_RUNS.fetch_add(1, Ordering::SeqCst);
+    }
+
+    fn scheduler_with_start() -> Scheduler {
+        let mut scheduler = Scheduler::new();
+        let mut stage = SystemStage::new(Stage::Start.name());
+        stage.add_system(FunctionSystem::new("bump_start", bump_start));
+        scheduler.add_stage(stage);
+        scheduler
+    }
+
+    #[test]
+    fn clear_requests_start_rerun() {
+        START_RUNS.store(0, Ordering::SeqCst);
+        let mut scheduler = scheduler_with_start();
+        let mut world = World::new();
+
+        scheduler.run_stage(Stage::Start, &mut world);
+        world.take_start_request();
+        assert_eq!(START_RUNS.load(Ordering::SeqCst), 1);
+        assert!(!scheduler.run_start_if_requested(&mut world));
+        assert_eq!(START_RUNS.load(Ordering::SeqCst), 1);
+
+        world.clear();
+        assert!(scheduler.run_start_if_requested(&mut world));
+        assert_eq!(START_RUNS.load(Ordering::SeqCst), 2);
     }
 }
