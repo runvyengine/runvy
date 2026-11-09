@@ -10,13 +10,14 @@ runvy_asset = { path = "../runvy_asset" }
 runvy_ecs = { path = "../runvy_ecs" }
 runvy_macros = { path = "../runvy_macros" }
 runvy_script_api = { path = "../runvy_script_api" }
-inventory = "0.3"
 runvy_render = { path = "../runvy_render" }
 runvy_render_api = { path = "../runvy_render_api" }
 
 glam.workspace = true
 winit.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
 bytemuck = { version = "1.25.0", features = ["derive"] }
 rodio = "0.22"
-serde = { version = "1.0", features = ["derive"] }
 ron = "0.12.0"
+inventory = "0.3"

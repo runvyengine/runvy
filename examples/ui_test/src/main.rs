@@ -1,6 +1,6 @@
 use runvy_engine::app::{RunvyApp, RunvyWindowConfig};
 use runvy_engine::core::components::{Camera, Transform, UiRenderer};
-use runvy_engine::core::ecs::{World, W};
+use runvy_engine::core::ecs::{QueryMut, Res, World, W};
 use runvy_engine::core::glam::Vec3;
 use runvy_engine::core::resources::Time;
 use runvy_engine::core::ui::{CanvasSpace, TextHandle};
@@ -88,21 +88,21 @@ fn ui_builder(ui: &mut UiRenderer) -> Option<TextHandle> {
 
 /// Animates the `PulseText` node's color through the RGB wheel each frame.
 #[system(Update)]
-fn pulse_text_system(world: &mut World) {
-    let t = world.get_resource::<Time>().elapsed;
+fn pulse_text_system(time: Res<Time>, q: QueryMut<(W<UiRenderer>, W<PulseText>)>) {
+    let t = time.elapsed;
 
     let r = (t * 2.0).sin() * 0.5 + 0.5;
     let g = ((t * 2.0) + 2.094).sin() * 0.5 + 0.5;
     let b = ((t * 2.0) + 4.188).sin() * 0.5 + 0.5;
 
-    for (_, (ui, pulse)) in world.query_mut::<(W<UiRenderer>, W<PulseText>)>() {
+    for (_, (ui, pulse)) in q {
         pulse.handle.set_color(ui, [r, g, b, 1.0]);
     }
 }
 
 /// Runs once at startup (after resources are initialized).
 #[system(Start)]
-fn startup_banner(_world: &mut World) {
+fn startup_banner() {
     println!("[startup] Runvy UI demo initialized");
 }
 

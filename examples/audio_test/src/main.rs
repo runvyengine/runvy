@@ -2,14 +2,14 @@ use runvy_engine::app::{RunvyApp, RunvyWindowConfig};
 use runvy_engine::core::components::{AudioListener, AudioSource, Camera, Transform};
 use runvy_engine::core::resources::input::InputState;
 use runvy_engine::core::KeyCode;
+use runvy_engine::ecs::{QueryMut, ResMut, W};
 use runvy_engine::system;
 use runvy_engine::{asset, ecs};
 
 #[system]
-fn toggle_sound(world: &mut ecs::World) {
-    let mut input = world.delete_resource::<InputState>();
+fn toggle_sound(mut input: ResMut<InputState>, q: QueryMut<W<AudioSource>>) {
     if input.is_key_just_pressed(KeyCode::Space) {
-        for (_, source) in world.query_mut::<ecs::W<AudioSource>>() {
+        for (_, source) in q {
             if source.playing {
                 source.stop();
             } else {
@@ -17,7 +17,6 @@ fn toggle_sound(world: &mut ecs::World) {
             }
         }
     }
-    world.add_resource(input);
 }
 
 fn main() {

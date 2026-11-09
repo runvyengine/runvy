@@ -1,5 +1,5 @@
 [package]
-name = "sandbox_ui"
+name = "ui_test"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
