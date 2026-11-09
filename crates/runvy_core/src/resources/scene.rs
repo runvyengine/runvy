@@ -5,6 +5,7 @@ use std::path::Path;
 inventory::collect!(SceneDescriptor);
 
 pub struct SceneDescriptor {
+    #[allow(dead_code)]
     pub name: &'static str,
     pub factory: fn() -> Box<dyn Scene>,
 }

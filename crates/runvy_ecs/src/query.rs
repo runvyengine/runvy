@@ -24,7 +24,10 @@ pub unsafe trait Fetch: 'static {
     /// `(type_id, writable)` pairs in column order. Used to reject aliasing
     /// queries (two mutable accesses to the same component) at build time.
     fn access() -> Vec<(TypeId, bool)> {
-        Self::type_ids().into_iter().map(|tid| (tid, Self::WRITE)).collect()
+        Self::type_ids()
+            .into_iter()
+            .map(|tid| (tid, Self::WRITE))
+            .collect()
     }
 
     unsafe fn extract_const<'w>(ptrs: &[*const u8], row: usize) -> Self::Item<'w>;

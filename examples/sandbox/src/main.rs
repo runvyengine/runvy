@@ -40,10 +40,7 @@ fn player_movement(
     }
 
     if input.is_key_just_pressed(KeyCode::KeyF) {
-        console.add_message_with_level(
-            format!("Player at {:?}", first_pos),
-            MessageLevel::Info,
-        );
+        console.add_message_with_level(format!("Player at {:?}", first_pos), MessageLevel::Info);
     }
 }
 

@@ -85,7 +85,8 @@ pub fn system(attr: TokenStream, item: TokenStream) -> TokenStream {
             let tuple_pattern = tuple_of(&arg_idents);
             let tuple_type = tuple_of_items(arg_tys.iter().map(|t| quote! { #t }));
             let cell_ty = quote! { <#crate_path_ts::ecs::UnsafeWorldCell>::new(world) };
-            let params_ty = quote! { <#tuple_type as #crate_path_ts::ecs::SystemParam>::get(__cell) };
+            let params_ty =
+                quote! { <#tuple_type as #crate_path_ts::ecs::SystemParam>::get(__cell) };
 
             quote! {
                 let __cell = unsafe { #cell_ty };
@@ -148,7 +149,9 @@ where
 
 /// Wraps a sequence of item token-streams in parentheses with a comma after
 /// each, so the result is a valid tuple type: `( A, B, )`.
-fn tuple_of_items(parts: impl IntoIterator<Item = proc_macro2::TokenStream>) -> proc_macro2::TokenStream {
+fn tuple_of_items(
+    parts: impl IntoIterator<Item = proc_macro2::TokenStream>,
+) -> proc_macro2::TokenStream {
     let mut body = proc_macro2::TokenStream::new();
     for part in parts {
         body.extend(part);
@@ -726,5 +729,3 @@ fn doc_block(attrs: &[Attribute], indent: &str) -> String {
     }
     out
 }
-
-

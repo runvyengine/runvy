@@ -41,7 +41,9 @@ pub struct SavedCamera {
 }
 
 pub fn save_camera(world: &mut World) {
-    let mut saved = world.try_delete_resource::<SavedCamera>().unwrap_or_default();
+    let mut saved = world
+        .try_delete_resource::<SavedCamera>()
+        .unwrap_or_default();
     saved.state = world
         .query::<(R<Transform>, R<CameraController>)>()
         .next()
@@ -55,13 +57,12 @@ pub fn save_camera(world: &mut World) {
 }
 
 pub fn restore_camera(world: &mut World) {
-    let state = world
-        .try_get_resource::<SavedCamera>()
-        .and_then(|saved| {
-            saved.state.as_ref().map(|state| {
-                (state.position, state.rotation, state.yaw, state.pitch)
-            })
-        });
+    let state = world.try_get_resource::<SavedCamera>().and_then(|saved| {
+        saved
+            .state
+            .as_ref()
+            .map(|state| (state.position, state.rotation, state.yaw, state.pitch))
+    });
 
     let Some((position, rotation, yaw, pitch)) = state else {
         return;
