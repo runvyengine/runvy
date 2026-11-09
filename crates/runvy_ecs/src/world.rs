@@ -37,9 +37,9 @@ impl EntityStore {
     }
 
     pub fn spawn<B: Bundle>(&mut self, bundle: B) -> Entity {
-        let type_ids = B::type_ids();
-        let infos = B::component_infos();
-        let key = type_ids.clone();
+        let mut infos = B::component_infos();
+        infos.sort_by_key(|i| i.type_id);
+        let key: Vec<TypeId> = infos.iter().map(|i| i.type_id).collect();
 
         let arch_id = self.find_or_create_archetype(&key, &infos);
         let arch = &mut self.archetypes[arch_id.0 as usize];
@@ -123,6 +123,7 @@ impl EntityStore {
             .collect();
         let mut new_infos = old_infos.clone();
         new_infos.push(ComponentInfo::of::<T>());
+        new_infos.sort_by_key(|i| i.type_id);
         let new_key: Vec<TypeId> = new_infos.iter().map(|i| i.type_id).collect();
         let new_arch_id = self.find_or_create_archetype(&new_key, &new_infos);
 
@@ -131,16 +132,15 @@ impl EntityStore {
             let (old_arch, new_arch) =
                 Self::split_two(&mut self.archetypes, old_arch_id.0, new_arch_id.0);
             new_row = new_arch.entities.len();
-            for (i, col) in old_arch.columns.iter().enumerate() {
+            for col in &old_arch.columns {
+                let target_col = new_arch.column_mut(col.type_id()).unwrap();
                 if let Some(src) = col.blob.get(old_row) {
-                    // Copy the component's bytes into the new column; the old column
-                    // is later removed with `swap_remove_no_drop`, so ownership is
-                    // transferred exactly once (no double-free).
-                    unsafe { new_arch.columns[i].blob.push(src) };
+                    unsafe { target_col.blob.push(src) };
                 }
             }
+            let target_col = new_arch.column_mut(TypeId::of::<T>()).unwrap();
             let val_ptr = &value as *const T as *mut u8;
-            unsafe { new_arch.columns[old_infos.len()].blob.push(val_ptr) };
+            unsafe { target_col.blob.push(val_ptr) };
             std::mem::forget(value);
             new_arch.entities.push(entity);
         }
@@ -175,11 +175,12 @@ impl EntityStore {
 
         let old_infos: Vec<ComponentInfo> =
             old_arch.columns.iter().map(|c| c.info.clone()).collect();
-        let new_infos: Vec<ComponentInfo> = old_infos
+        let mut new_infos: Vec<ComponentInfo> = old_infos
             .iter()
             .filter(|i| i.type_id != TypeId::of::<T>())
             .cloned()
             .collect();
+        new_infos.sort_by_key(|i| i.type_id);
         let new_key: Vec<TypeId> = new_infos.iter().map(|i| i.type_id).collect();
         let new_arch_id = self.find_or_create_archetype(&new_key, &new_infos);
 
@@ -192,13 +193,9 @@ impl EntityStore {
                 if col.type_id() == TypeId::of::<T>() {
                     continue;
                 }
-                let idx = new_arch
-                    .columns
-                    .iter()
-                    .position(|c| c.type_id() == col.type_id())
-                    .unwrap();
+                let target_col = new_arch.column_mut(col.type_id()).unwrap();
                 if let Some(src) = col.blob.get(old_row) {
-                    unsafe { new_arch.columns[idx].blob.push(src) };
+                    unsafe { target_col.blob.push(src) };
                 }
             }
             new_arch.entities.push(entity);
@@ -293,10 +290,11 @@ impl EntityStore {
         let id = ArchetypeId(self.next_archetype_id);
         self.next_archetype_id += 1;
 
-        let columns: Vec<BlobColumn> = infos
+        let mut columns: Vec<BlobColumn> = infos
             .iter()
             .map(|info| BlobColumn::new(info.clone()))
             .collect();
+        columns.sort_by_key(|c| c.type_id());
         let arch = Archetype::new(id, columns);
         self.archetypes.push(arch);
         self.archetype_by_key.insert(key.to_vec(), id);
@@ -560,6 +558,29 @@ impl Default for World {
 mod tests {
     use super::*;
     use crate::W;
+
+    #[test]
+    fn canonical_archetype_order_test() {
+        let mut w = World::new();
+
+        // Spawn (A, B) and (B, A) - they MUST belong to the EXACT same ArchetypeId!
+        let e1 = w.spawn((A { v: 10 }, B { s: "first".into() }));
+        let e2 = w.spawn((B { s: "second".into() }, A { v: 20 }));
+
+        let loc1 = w.entities.entity_location.get(&e1).copied().unwrap();
+        let loc2 = w.entities.entity_location.get(&e2).copied().unwrap();
+
+        assert_eq!(
+            loc1.archetype_id, loc2.archetype_id,
+            "Archetype must be canonical and independent of bundle tuple order"
+        );
+        assert_eq!(w.entities.archetypes.len(), 1);
+
+        assert_eq!(w.get::<A>(e1).unwrap().v, 10);
+        assert_eq!(w.get::<B>(e1).unwrap().s, "first");
+        assert_eq!(w.get::<A>(e2).unwrap().v, 20);
+        assert_eq!(w.get::<B>(e2).unwrap().s, "second");
+    }
 
     #[derive(Debug, PartialEq, Default)]
     struct A {

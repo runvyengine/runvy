@@ -2,7 +2,7 @@ use std::any::TypeId;
 
 use crate::blob_vec::{BlobVec, ComponentInfo};
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct ArchetypeId(pub u32);
 
 pub struct BlobColumn {
@@ -30,7 +30,8 @@ pub struct Archetype {
 }
 
 impl Archetype {
-    pub fn new(id: ArchetypeId, columns: Vec<BlobColumn>) -> Self {
+    pub fn new(id: ArchetypeId, mut columns: Vec<BlobColumn>) -> Self {
+        columns.sort_by_key(|c| c.type_id());
         Self {
             id,
             entities: Vec::new(),
@@ -43,15 +44,25 @@ impl Archetype {
     }
 
     pub fn has_type(&self, type_id: TypeId) -> bool {
-        self.columns.iter().any(|c| c.type_id() == type_id)
+        self.columns
+            .binary_search_by_key(&type_id, |c| c.type_id())
+            .is_ok()
     }
 
     pub fn column(&self, type_id: TypeId) -> Option<&BlobColumn> {
-        self.columns.iter().find(|c| c.type_id() == type_id)
+        let idx = self
+            .columns
+            .binary_search_by_key(&type_id, |c| c.type_id())
+            .ok()?;
+        Some(&self.columns[idx])
     }
 
     pub fn column_mut(&mut self, type_id: TypeId) -> Option<&mut BlobColumn> {
-        self.columns.iter_mut().find(|c| c.type_id() == type_id)
+        let idx = self
+            .columns
+            .binary_search_by_key(&type_id, |c| c.type_id())
+            .ok()?;
+        Some(&mut self.columns[idx])
     }
 }
 
@@ -74,15 +85,17 @@ macro_rules! impl_bundle {
             }
 
             fn put(self, columns: &mut [BlobColumn]) {
-                let mut idx = 0;
                 let ($($T,)+) = self;
                 $({
+                    let tid = TypeId::of::<$T>();
+                    let col = columns
+                        .iter_mut()
+                        .find(|c| c.type_id() == tid)
+                        .expect("Missing column in archetype for bundle component");
                     let ptr = &$T as *const $T as *mut u8;
-                    unsafe { columns[idx].blob.push(ptr) };
+                    unsafe { col.blob.push(ptr) };
                     std::mem::forget($T);
-                    idx += 1;
                 })+
-                let _ = idx;
             }
         }
     };

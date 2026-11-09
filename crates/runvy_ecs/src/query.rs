@@ -138,29 +138,53 @@ fn validate_no_aliasing(access: &[(TypeId, bool)]) {
     }
 }
 
-fn collect_ptrs(arch: &Archetype, type_ids: &[TypeId]) -> Option<Vec<*const u8>> {
-    type_ids
-        .iter()
-        .map(|tid| Some(arch.column(*tid)?.blob.as_ptr()))
-        .collect()
+pub const MAX_QUERY_COMPONENTS: usize = 8;
+
+fn collect_ptrs(
+    arch: &Archetype,
+    type_ids: &[TypeId],
+) -> Option<([*const u8; MAX_QUERY_COMPONENTS], usize)> {
+    if type_ids.len() > MAX_QUERY_COMPONENTS {
+        panic!(
+            "Query exceeds maximum component limit of {}",
+            MAX_QUERY_COMPONENTS
+        );
+    }
+    let mut ptrs = [std::ptr::null(); MAX_QUERY_COMPONENTS];
+    for (i, tid) in type_ids.iter().enumerate() {
+        ptrs[i] = arch.column(*tid)?.blob.as_ptr();
+    }
+    Some((ptrs, type_ids.len()))
 }
 
-fn collect_ptrs_mut(arch: &mut Archetype, type_ids: &[TypeId]) -> Option<Vec<*mut u8>> {
-    type_ids
-        .iter()
-        .map(|tid| Some(arch.column_mut(*tid)?.blob.as_mut_ptr()))
-        .collect()
+fn collect_ptrs_mut(
+    arch: &mut Archetype,
+    type_ids: &[TypeId],
+) -> Option<([*mut u8; MAX_QUERY_COMPONENTS], usize)> {
+    if type_ids.len() > MAX_QUERY_COMPONENTS {
+        panic!(
+            "Query exceeds maximum component limit of {}",
+            MAX_QUERY_COMPONENTS
+        );
+    }
+    let mut ptrs = [std::ptr::null_mut(); MAX_QUERY_COMPONENTS];
+    for (i, tid) in type_ids.iter().enumerate() {
+        ptrs[i] = arch.column_mut(*tid)?.blob.as_mut_ptr();
+    }
+    Some((ptrs, type_ids.len()))
 }
 
 struct Table<'w> {
     entities: &'w [Entity],
-    ptrs: Vec<*const u8>,
+    ptrs: [*const u8; MAX_QUERY_COMPONENTS],
+    ptr_count: usize,
     len: usize,
 }
 
 struct TableMut<'w> {
     entities: &'w [Entity],
-    ptrs: Vec<*mut u8>,
+    ptrs: [*mut u8; MAX_QUERY_COMPONENTS],
+    ptr_count: usize,
     len: usize,
 }
 
@@ -176,15 +200,16 @@ impl<'w, M: Fetch> Query<'w, M> {
         let access = M::access();
         validate_no_aliasing(&access);
         let type_ids: Vec<TypeId> = access.iter().map(|(tid, _)| *tid).collect();
-        let mut tables = Vec::new();
+        let mut tables = Vec::with_capacity(store.archetypes.len());
         for arch in &store.archetypes {
             if !arch.has_type(type_ids[0]) {
                 continue;
             }
-            if let Some(ptrs) = collect_ptrs(arch, &type_ids) {
+            if let Some((ptrs, ptr_count)) = collect_ptrs(arch, &type_ids) {
                 tables.push(Table {
                     entities: &arch.entities,
                     ptrs,
+                    ptr_count,
                     len: arch.entity_count(),
                 });
             }
@@ -207,7 +232,7 @@ impl<'w, M: Fetch> Query<'w, M> {
     pub fn get_entity(&self, entity: Entity) -> Option<M::Item<'w>> {
         for t in &self.tables {
             if let Some(row) = t.entities.iter().position(|&e| e == entity) {
-                return Some(unsafe { M::extract_const(&t.ptrs, row) });
+                return Some(unsafe { M::extract_const(&t.ptrs[..t.ptr_count], row) });
             }
         }
         None
@@ -221,7 +246,7 @@ impl<'w, M: Fetch> Iterator for Query<'w, M> {
             let t = self.tables.get(self.table_idx)?;
             if self.row < t.len {
                 let entity = t.entities[self.row];
-                let item = unsafe { M::extract_const(&t.ptrs, self.row) };
+                let item = unsafe { M::extract_const(&t.ptrs[..t.ptr_count], self.row) };
                 self.row += 1;
                 return Some((entity, item));
             }
@@ -243,18 +268,19 @@ impl<'w, M: Fetch> QueryMut<'w, M> {
         let access = M::access();
         validate_no_aliasing(&access);
         let type_ids: Vec<TypeId> = access.iter().map(|(tid, _)| *tid).collect();
-        let mut tables = Vec::new();
+        let mut tables = Vec::with_capacity(store.archetypes.len());
         for arch in &mut store.archetypes {
             if !arch.has_type(type_ids[0]) {
                 continue;
             }
-            let Some(ptrs) = collect_ptrs_mut(arch, &type_ids) else {
+            let Some((ptrs, ptr_count)) = collect_ptrs_mut(arch, &type_ids) else {
                 continue;
             };
             let entities = &arch.entities as *const Vec<Entity>;
             tables.push(TableMut {
                 entities: unsafe { &*entities },
                 ptrs,
+                ptr_count,
                 len: arch.entity_count(),
             });
         }
@@ -276,7 +302,7 @@ impl<'w, M: Fetch> QueryMut<'w, M> {
     pub fn get_entity(&self, entity: Entity) -> Option<M::Item<'w>> {
         for t in &self.tables {
             if let Some(row) = t.entities.iter().position(|&e| e == entity) {
-                return Some(unsafe { M::extract_mut(&t.ptrs, row) });
+                return Some(unsafe { M::extract_mut(&t.ptrs[..t.ptr_count], row) });
             }
         }
         None
@@ -290,7 +316,7 @@ impl<'w, M: Fetch> Iterator for QueryMut<'w, M> {
             let t = self.tables.get(self.table_idx)?;
             if self.row < t.len {
                 let entity = t.entities[self.row];
-                let item = unsafe { M::extract_mut(&t.ptrs, self.row) };
+                let item = unsafe { M::extract_mut(&t.ptrs[..t.ptr_count], self.row) };
                 self.row += 1;
                 return Some((entity, item));
             }
