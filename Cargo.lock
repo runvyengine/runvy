@@ -142,7 +142,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
 name = "audio_test"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_engine",
 ]
@@ -390,7 +390,7 @@ dependencies = [
 
 [[package]]
 name = "command_queue_test"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_engine",
 ]
@@ -406,7 +406,7 @@ dependencies = [
 
 [[package]]
 name = "console_test"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_engine",
 ]
@@ -1379,7 +1379,7 @@ checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
 
 [[package]]
 name = "lua_scripting_test"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_engine",
 ]
@@ -2363,7 +2363,7 @@ checksum = "7204ed6420f698836b76d4d5c2ec5dec7585fd5c3a788fd1cde855d1de598239"
 
 [[package]]
 name = "runvy_app"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_asset",
  "runvy_core",
@@ -2376,7 +2376,7 @@ dependencies = [
 
 [[package]]
 name = "runvy_asset"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "gltf",
  "image 0.24.9",
@@ -2391,7 +2391,7 @@ dependencies = [
 
 [[package]]
 name = "runvy_core"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "bytemuck",
  "glam",
@@ -2411,14 +2411,14 @@ dependencies = [
 
 [[package]]
 name = "runvy_ecs"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "inventory",
 ]
 
 [[package]]
 name = "runvy_engine"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "glam",
  "inventory",
@@ -2435,7 +2435,7 @@ dependencies = [
 
 [[package]]
 name = "runvy_macros"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2444,7 +2444,7 @@ dependencies = [
 
 [[package]]
 name = "runvy_render"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "bytemuck",
  "glam",
@@ -2458,7 +2458,7 @@ dependencies = [
 
 [[package]]
 name = "runvy_render_api"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "bytemuck",
  "glam",
@@ -2468,7 +2468,7 @@ dependencies = [
 
 [[package]]
 name = "runvy_script_api"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "glam",
  "inventory",
@@ -2544,21 +2544,21 @@ dependencies = [
 
 [[package]]
 name = "sandbox"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_engine",
 ]
 
 [[package]]
 name = "sandbox_3d"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_engine",
 ]
 
 [[package]]
 name = "scenemanager_test"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_engine",
 ]
@@ -2980,14 +2980,14 @@ dependencies = [
 
 [[package]]
 name = "tilemap_test"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_engine",
 ]
 
 [[package]]
 name = "timer_test"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_engine",
 ]
@@ -3083,7 +3083,7 @@ checksum = "bc7d623258602320d5c55d1bc22793b57daff0ec7efc270ea7d55ce1d5f5471c"
 
 [[package]]
 name = "ui_test"
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 dependencies = [
  "runvy_engine",
 ]

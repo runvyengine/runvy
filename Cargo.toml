@@ -1,34 +1,34 @@
 [workspace]
 members = [
-    # Crates:
-    "crates/runvy_macros",
-    "crates/runvy_engine",
-    "crates/runvy_app",
-    "crates/runvy_core",
-    "crates/runvy_ecs",
-    "crates/runvy_render",
-    "crates/runvy_asset",
-    # "crates/runvy_project",
-    # "crates/runvy_editor",
-    "crates/runvy_render_api",
-    "crates/runvy_script_api",
-    # Examples:
-    "examples/audio_test",
-    "examples/command_queue_test",
-    "examples/console_test",
-    "examples/lua_scripting_test",
-    "examples/sandbox",
-    "examples/sandbox_3d",
-    "examples/scenemanager_test",
-    "examples/ui_test",
-    "examples/tilemap_test",
-    "examples/timer_test",
+	# Crates:
+	"crates/runvy_macros",
+	"crates/runvy_engine",
+	"crates/runvy_app",
+	"crates/runvy_core",
+	"crates/runvy_ecs",
+	"crates/runvy_render",
+	"crates/runvy_asset",
+	# "crates/runvy_project",
+	# "crates/runvy_editor",
+	"crates/runvy_render_api",
+	"crates/runvy_script_api",
+	# Examples:
+	"examples/audio_test",
+	"examples/command_queue_test",
+	"examples/console_test",
+	"examples/lua_scripting_test",
+	"examples/sandbox",
+	"examples/sandbox_3d",
+	"examples/scenemanager_test",
+	"examples/ui_test",
+	"examples/tilemap_test",
+	"examples/timer_test",
 ]
 exclude = ["templates"]
 resolver = "2"
 
 [workspace.package]
-version = "0.8.0-pre.4"
+version = "0.8.0-pre.5"
 authors = ["Nik Neza <nik.n.neza@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
