@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use runvy_core::components::EMPTY_TILE;
 use runvy_core::components::{
     BackgroundMode, Camera, MeshRenderer, Sorting, SpriteRenderer, Tilemap, Transform, UiRenderer,
     WorldAtmosphere,
 };
+use runvy_core::components::{ChildOf, EMPTY_TILE};
 use runvy_core::resources::input::{self, InputState};
 use runvy_core::resources::Time;
 use runvy_core::{glam, Console, Vec2};
@@ -92,6 +92,14 @@ impl<'window> App<'window> {
                 cam.resize(w, h);
             }
         }
+    }
+
+    fn childof(&mut self) {
+        let Self {
+            ref world,
+            ref mut queue,
+            ..
+        } = self;
     }
 
     fn render_ecs_sprites(&mut self, alpha: f32) {

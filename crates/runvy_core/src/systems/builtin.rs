@@ -44,7 +44,7 @@ pub fn cursor_interaction(
     let mouse_down = input.is_mouse_button_just_pressed(MouseButton::Left);
 
     for (_, (interactable, transform)) in q {
-        interactable.is_hovered = interactable.contains_point(world_pos, transform.position);
+        interactable.is_hovered = interactable.contains_point(world_pos, transform.global_position);
         if mouse_down && interactable.is_hovered {
             if let Some(cb) = interactable.on_click_mut() {
                 if let Ok(f) = cb.get_mut() {
@@ -84,7 +84,11 @@ pub fn audio_system(
 
     for (_, (listener, transform)) in listeners {
         if listener.active {
-            engine.set_listener(transform.position, transform.rotation, listener.volume);
+            engine.set_listener(
+                transform.global_position,
+                transform.global_rotation,
+                listener.volume,
+            );
         }
     }
 
