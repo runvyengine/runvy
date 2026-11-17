@@ -2,7 +2,6 @@ pub mod active_camera;
 pub mod audio_listener;
 pub mod audio_source;
 mod camera;
-mod childof;
 mod collider2d;
 mod collider3d;
 mod cursor_interactable;
@@ -60,4 +59,4 @@ pub use world_atmosphere::{BackgroundMode, WorldAtmosphere};
 pub use timer::Timer;
 pub use ui_renderer::UiRenderer;
 
-pub use childof::ChildOf;
+pub use runvy_ecs::{ChildOf, Children};

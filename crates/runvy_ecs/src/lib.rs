@@ -6,6 +6,7 @@ mod param;
 mod query;
 mod system;
 mod world;
+mod hierarchy;
 
 pub use archetype::{Archetype, ArchetypeId, BlobColumn, Bundle};
 pub use blob_vec::{BlobVec, ComponentInfo};
@@ -17,3 +18,4 @@ pub use world::{EntityStore, ResourceStore, World};
 
 pub use commands::{commands, CommandQueue, Commands};
 pub use inventory;
+pub use hierarchy::{ChildOf, Children, HierarchyError};
