@@ -2,6 +2,7 @@ mod archetype;
 mod blob_vec;
 mod commands;
 mod entity;
+mod hierarchy;
 mod param;
 mod query;
 mod system;
@@ -16,4 +17,5 @@ pub use system::{Scheduler, Stage, System, SystemDescriptor, SystemStage};
 pub use world::{EntityStore, ResourceStore, World};
 
 pub use commands::{commands, CommandQueue, Commands};
+pub use hierarchy::{ChildOf, Children, HierarchyError};
 pub use inventory;

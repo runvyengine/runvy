@@ -318,7 +318,10 @@ impl<'window> EditorApp<'window> {
         let Some(camera) = object.get_component::<Camera>() else {
             return;
         };
-        let resolved = camera.resolved_with_transform(object.get_component::<Transform>());
+        let global = object
+            .get_component::<Transform>()
+            .map(GlobalTransform::from_local);
+        let resolved = camera.resolved_with_transform(global.as_ref());
 
         if resolved.projection == runvy_core::components::ProjectionType::Orthographic {
             if matches!(
@@ -648,7 +651,6 @@ impl<'window> EditorApp<'window> {
 
                 transform.position.x = target.x;
                 transform.position.y = target.y;
-                transform.previous_position = transform.position;
             }
             GizmoHandleKind::ScaleX => {
                 let center = drag.start_position.truncate();
@@ -675,7 +677,6 @@ impl<'window> EditorApp<'window> {
                     drag.start_rotation_z + (current_angle - drag.start_pointer_angle);
                 let (x, y, _) = transform.rotation.to_euler(EulerRot::XYZ);
                 transform.rotation = Quat::from_euler(EulerRot::XYZ, x, y, new_rotation_z);
-                transform.previous_rotation = transform.rotation;
             }
             GizmoHandleKind::PositionAxis(_)
             | GizmoHandleKind::RotationAxis(_)
@@ -743,7 +744,6 @@ impl<'window> EditorApp<'window> {
                     position[axis] = (position[axis] / step).round() * step;
                 }
                 transform.position = position;
-                transform.previous_position = transform.position;
             }
             GizmoHandleKind::RotationAxis(axis) => {
                 let (mut x, mut y, mut z) = transform.rotation.to_euler(EulerRot::XYZ);
@@ -754,7 +754,6 @@ impl<'window> EditorApp<'window> {
                     _ => z += rotation_delta,
                 }
                 transform.rotation = Quat::from_euler(EulerRot::XYZ, x, y, z);
-                transform.previous_rotation = transform.rotation;
             }
             GizmoHandleKind::ScaleAxis(axis) => {
                 let mut scale = transform.scale;

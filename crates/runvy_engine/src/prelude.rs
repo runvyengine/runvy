@@ -12,9 +12,9 @@ pub use crate::{
 
 pub use crate::core::components::{
     ActiveCamera, AlphaMode, AudioListener, AudioSource, Camera, Collider2D, CursorInteractable,
-    DirectionalLight, Material, Mesh, MeshRenderer, PointLight, ProjectionType, Sorting,
-    SpriteAnimator, SpriteRenderer, TileId, Tilemap, TilemapLayer, Transform, UiRenderer, UvRect,
-    Vertex3D, EMPTY_TILE,
+    DirectionalLight, GlobalTransform, Material, Mesh, MeshRenderer, PointLight, ProjectionType,
+    Sorting, SpriteAnimator, SpriteRenderer, TileId, Tilemap, TilemapLayer, Transform, UiRenderer,
+    UvRect, Vertex3D, EMPTY_TILE,
 };
 
 // pub use crate::core::input::{

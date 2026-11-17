@@ -53,8 +53,10 @@ pub use tilemap::Tilemap;
 pub use tilemap::TilemapLayer;
 pub use tilemap::UvRect;
 pub use tilemap::EMPTY_TILE;
-pub use transform::Transform;
+pub use transform::{GlobalTransform, Transform};
 pub use world_atmosphere::{BackgroundMode, WorldAtmosphere};
 
 pub use timer::Timer;
 pub use ui_renderer::UiRenderer;
+
+pub use runvy_ecs::{ChildOf, Children};

@@ -28,6 +28,7 @@ impl RunvyApp {
         init_resources(&mut world);
         scheduler.run_stage(runvy_ecs::Stage::Start, &mut world);
         world.take_start_request();
+        runvy_core::systems::hierarchy::propagate_transforms(&mut world);
 
         let mut app = App {
             window: None,

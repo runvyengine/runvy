@@ -33,7 +33,6 @@ impl Scene for SecondScene {
                     position: Vec3::new(x, 0.0, z),
                     rotation: Quat::IDENTITY,
                     scale: Vec3::splat(0.7),
-                    ..Transform::default()
                 },
                 MeshRenderer::new(Mesh::cube(1.0)),
             ));

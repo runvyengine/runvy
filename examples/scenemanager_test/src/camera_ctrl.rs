@@ -71,7 +71,6 @@ pub fn restore_camera(world: &mut World) {
     for (_, (transform, ctrl)) in world.query_mut::<(W<Transform>, W<CameraController>)>() {
         transform.position = position;
         transform.rotation = rotation;
-        transform.sync_previous_to_current();
         ctrl.yaw = yaw;
         ctrl.pitch = pitch;
     }

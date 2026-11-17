@@ -3,7 +3,8 @@ use std::collections::HashMap;
 
 use crate::archetype::{Archetype, ArchetypeId, BlobColumn, Bundle};
 use crate::blob_vec::ComponentInfo;
-use crate::Entity;
+use crate::hierarchy::Children;
+use crate::{ChildOf, Entity, HierarchyError};
 
 #[derive(Clone, Copy)]
 pub(crate) struct Location {
@@ -466,6 +467,24 @@ impl World {
     }
 
     pub fn despawn(&mut self, entity: Entity) -> bool {
+        if !self.entities.contains(entity) {
+            return false;
+        }
+
+        // Remove this entity from its parent's Children list.
+        self.remove_parent(entity);
+
+        // Direct children become roots: clear their ChildOf.
+        let children = self
+            .entities
+            .get::<Children>(entity)
+            .map(Children::snapshot)
+            .unwrap_or_default();
+
+        for child in children {
+            self.entities.remove_component::<ChildOf>(child);
+        }
+
         self.entities.despawn(entity)
     }
 
@@ -545,6 +564,111 @@ impl World {
 
     pub fn init_resource<T: Default + 'static>(&mut self) {
         self.resources.init::<T>()
+    }
+
+    pub fn add_child(&mut self, parent: Entity, child: Entity) -> Result<(), HierarchyError> {
+        if parent == child {
+            return Err(HierarchyError::SelfParent);
+        }
+        if !self.entities.contains(parent) {
+            return Err(HierarchyError::EntityNotFound(parent));
+        }
+        if !self.entities.contains(child) {
+            return Err(HierarchyError::EntityNotFound(child));
+        }
+
+        // Cycle check: walk from the new parent to the root.
+        let mut ancestor = Some(parent);
+        while let Some(current) = ancestor {
+            if current == child {
+                return Err(HierarchyError::Cycle);
+            }
+            ancestor = self.parent(current)
+        }
+
+        // Already parented to this parent.
+        if let Some(old_parent) = self.parent(child) {
+            self.deatach_child_from_parent(old_parent, child);
+        }
+
+        // Child -> parent. This upserts if ChildOf already exists.
+        self.entities.add_component(child, ChildOf::new(parent));
+
+        // Parent -> child.
+        let pushed = if let Some(children) = self.entities.get_mut::<Children>(parent) {
+            children.push(child);
+            true
+        } else {
+            false
+        };
+
+        if !pushed {
+            let mut children = Children::default();
+            children.push(child);
+            self.entities.add_component(parent, children);
+        }
+
+        Ok(())
+    }
+
+    fn deatach_child_from_parent(&mut self, parent: Entity, child: Entity) {
+        let became_empty = match self.entities.get_mut::<Children>(parent) {
+            Some(children) => {
+                children.remove(child);
+                children.is_empty()
+            }
+            None => false,
+        };
+
+        if became_empty {
+            self.entities.remove_component::<Children>(parent);
+        }
+    }
+
+    pub fn remove_parent(&mut self, child: Entity) -> Option<Entity> {
+        let parent = self.parent(child)?;
+
+        self.deatach_child_from_parent(parent, child);
+        self.entities.remove_component::<ChildOf>(child);
+
+        Some(parent)
+    }
+
+    pub fn parent(&self, child: Entity) -> Option<Entity> {
+        self.entities.get::<ChildOf>(child).map(|c| c.parent())
+    }
+
+    pub fn children(&self, parent: Entity) -> Option<&Children> {
+        self.entities.get::<Children>(parent)
+    }
+
+    pub fn despawn_recursive(&mut self, entity: Entity) -> usize {
+        if !self.entities.contains(entity) {
+            return 0;
+        }
+
+        // Collect the whole subtree before mutating anything.
+        let mut stack = vec![entity];
+        let mut to_despawn = Vec::new();
+
+        while let Some(e) = stack.pop() {
+            to_despawn.push(e);
+
+            if let Some(children) = self.entities.get::<Children>(e) {
+                stack.extend(children.iter());
+            }
+        }
+
+        // Detach the root from its surviving parent.
+        self.remove_parent(entity);
+
+        let count = to_despawn.len();
+
+        for e in to_despawn {
+            self.entities.despawn(e);
+        }
+
+        count
     }
 }
 
@@ -648,5 +772,74 @@ mod tests {
         }
 
         assert_eq!(w.get::<A>(1).unwrap().v, 1);
+    }
+
+    #[test]
+    fn hierarchy_add_reparent_and_cycle() {
+        let mut w = World::new();
+        let root = w.spawn((A { v: 1 },));
+        let child = w.spawn((A { v: 2 },));
+        let other = w.spawn((A { v: 3 },));
+
+        w.add_child(root, child).unwrap();
+        assert_eq!(w.parent(child), Some(root));
+        assert_eq!(
+            w.children(root).unwrap().iter().collect::<Vec<_>>(),
+            vec![child]
+        );
+
+        w.add_child(other, child).unwrap();
+        assert_eq!(w.parent(child), Some(other));
+        assert!(w.children(root).is_none());
+
+        assert_eq!(w.add_child(child, other), Err(HierarchyError::Cycle));
+        assert_eq!(w.add_child(root, root), Err(HierarchyError::SelfParent));
+        assert_eq!(
+            w.add_child(999, root),
+            Err(HierarchyError::EntityNotFound(999))
+        );
+    }
+
+    #[test]
+    fn hierarchy_remove_parent() {
+        let mut w = World::new();
+        let parent = w.spawn((A { v: 1 },));
+        let child = w.spawn((A { v: 2 },));
+
+        w.add_child(parent, child).unwrap();
+        assert_eq!(w.remove_parent(child), Some(parent));
+        assert_eq!(w.parent(child), None);
+        assert!(w.children(parent).is_none());
+        assert_eq!(w.remove_parent(child), None);
+    }
+
+    #[test]
+    fn hierarchy_despawn_detaches_direct_children() {
+        let mut w = World::new();
+        let parent = w.spawn((A { v: 1 },));
+        let child = w.spawn((A { v: 2 },));
+
+        w.add_child(parent, child).unwrap();
+        assert!(w.despawn(parent));
+        assert!(!w.contains(parent));
+        assert!(w.contains(child));
+        assert_eq!(w.parent(child), None);
+    }
+
+    #[test]
+    fn hierarchy_despawn_recursive_removes_subtree() {
+        let mut w = World::new();
+        let root = w.spawn((A { v: 0 },));
+        let branch = w.spawn((A { v: 1 },));
+        let leaf = w.spawn((A { v: 2 },));
+
+        w.add_child(root, branch).unwrap();
+        w.add_child(branch, leaf).unwrap();
+
+        assert_eq!(w.despawn_recursive(branch), 2);
+        assert!(w.contains(root));
+        assert!(!w.contains(branch));
+        assert!(!w.contains(leaf));
+        assert!(w.children(root).is_none());
     }
 }

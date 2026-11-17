@@ -25,8 +25,9 @@ use egui_winit::State as EguiWinitState;
 use rfd::FileDialog;
 use runvy_core::components::{
     ActiveCamera, AudioListener, AudioSource, BackgroundMode, Camera, Collider2D,
-    ComponentRuntimeKind, CursorInteractable, DirectionalLight, Mesh, MeshRenderer,
-    ObjectDefinitionInstance, PhysicsCollision, SerializedTypeEntry, SerializedTypeKind,
+    ComponentRuntimeKind, CursorInteractable, DirectionalLight, GlobalTransform, Mesh,
+    MeshRenderer, ObjectDefinitionInstance, PhysicsCollision, SerializedTypeEntry,
+    SerializedTypeKind,
     SerializedTypeStorage, SpriteRenderer, Tilemap, TilemapRenderer, Transform, UiRenderer,
 };
 use runvy_core::glam::{EulerRot, Mat4, Quat, Vec2, Vec3};
