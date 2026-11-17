@@ -3,7 +3,7 @@ use runvy_macros::Scriptable;
 use runvy_script_api::luau::{FromLua, IntoLua, LuaRef, Result, Table, Value};
 
 use crate::collision2d::rect_corners;
-use crate::components::Transform;
+use crate::components::GlobalTransform;
 use crate::resources::event::Event;
 use runvy_ecs::Entity;
 
@@ -109,9 +109,9 @@ impl Collider2D {
         }
     }
 
-    /// Resolve this collider into world space, using the entity's transform.
+    /// Resolve this collider into world space, using the entity's global transform.
     /// Called once per entity per frame in the collision system.
-    pub fn to_world(&self, t: &Transform) -> WorldCollider2D {
+    pub fn to_world(&self, t: &GlobalTransform) -> WorldCollider2D {
         let center = Vec2::new(t.position.x, t.position.y);
         match self.shape {
             Collider2DShape::Rect { half_size } => WorldCollider2D::Rect {

@@ -2,7 +2,7 @@ use glam::{Quat, Vec3};
 use runvy_macros::Scriptable;
 use runvy_script_api::luau::{FromLua, IntoLua, LuaRef, Result, Table, Value};
 
-use crate::components::Transform;
+use crate::components::GlobalTransform;
 use crate::resources::event::Event;
 use runvy_ecs::Entity;
 
@@ -116,8 +116,8 @@ impl Collider3D {
         }
     }
 
-    /// Resolve this collider into world space, using the entity's transform.
-    pub fn to_world(&self, t: &Transform) -> WorldCollider3D {
+    /// Resolve this collider into world space, using the entity's global transform.
+    pub fn to_world(&self, t: &GlobalTransform) -> WorldCollider3D {
         let center = t.position + t.rotation * self.offset;
         match self.shape {
             Collider3DShape::Box { half_size } => WorldCollider3D::Box {

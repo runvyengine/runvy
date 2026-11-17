@@ -773,4 +773,73 @@ mod tests {
 
         assert_eq!(w.get::<A>(1).unwrap().v, 1);
     }
+
+    #[test]
+    fn hierarchy_add_reparent_and_cycle() {
+        let mut w = World::new();
+        let root = w.spawn((A { v: 1 },));
+        let child = w.spawn((A { v: 2 },));
+        let other = w.spawn((A { v: 3 },));
+
+        w.add_child(root, child).unwrap();
+        assert_eq!(w.parent(child), Some(root));
+        assert_eq!(
+            w.children(root).unwrap().iter().collect::<Vec<_>>(),
+            vec![child]
+        );
+
+        w.add_child(other, child).unwrap();
+        assert_eq!(w.parent(child), Some(other));
+        assert!(w.children(root).is_none());
+
+        assert_eq!(w.add_child(child, other), Err(HierarchyError::Cycle));
+        assert_eq!(w.add_child(root, root), Err(HierarchyError::SelfParent));
+        assert_eq!(
+            w.add_child(999, root),
+            Err(HierarchyError::EntityNotFound(999))
+        );
+    }
+
+    #[test]
+    fn hierarchy_remove_parent() {
+        let mut w = World::new();
+        let parent = w.spawn((A { v: 1 },));
+        let child = w.spawn((A { v: 2 },));
+
+        w.add_child(parent, child).unwrap();
+        assert_eq!(w.remove_parent(child), Some(parent));
+        assert_eq!(w.parent(child), None);
+        assert!(w.children(parent).is_none());
+        assert_eq!(w.remove_parent(child), None);
+    }
+
+    #[test]
+    fn hierarchy_despawn_detaches_direct_children() {
+        let mut w = World::new();
+        let parent = w.spawn((A { v: 1 },));
+        let child = w.spawn((A { v: 2 },));
+
+        w.add_child(parent, child).unwrap();
+        assert!(w.despawn(parent));
+        assert!(!w.contains(parent));
+        assert!(w.contains(child));
+        assert_eq!(w.parent(child), None);
+    }
+
+    #[test]
+    fn hierarchy_despawn_recursive_removes_subtree() {
+        let mut w = World::new();
+        let root = w.spawn((A { v: 0 },));
+        let branch = w.spawn((A { v: 1 },));
+        let leaf = w.spawn((A { v: 2 },));
+
+        w.add_child(root, branch).unwrap();
+        w.add_child(branch, leaf).unwrap();
+
+        assert_eq!(w.despawn_recursive(branch), 2);
+        assert!(w.contains(root));
+        assert!(!w.contains(branch));
+        assert!(!w.contains(leaf));
+        assert!(w.children(root).is_none());
+    }
 }

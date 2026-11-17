@@ -25,7 +25,6 @@ impl Scene for FirstScene {
                 position: Vec3::new(-1.5, 0.0, 0.0),
                 rotation: Quat::IDENTITY,
                 scale: Vec3::ONE,
-                ..Transform::default()
             },
             MeshRenderer::new(Mesh::cube(1.0)),
         ));
@@ -35,7 +34,6 @@ impl Scene for FirstScene {
                 position: Vec3::new(1.5, 0.0, 0.0),
                 rotation: Quat::IDENTITY,
                 scale: Vec3::new(2.0, 2.0, 2.0),
-                ..Transform::default()
             },
             MeshRenderer::new(Mesh::cube(1.0)),
         ));

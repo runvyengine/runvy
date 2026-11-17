@@ -2,7 +2,7 @@ use glam::{Mat4, Vec2, Vec3};
 use runvy_macros::Scriptable;
 use runvy_script_api::luau::{FromLua, IntoLua, LuaRef, Result, Value};
 
-use super::Transform;
+use crate::components::GlobalTransform;
 
 /// Camera projection type.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
@@ -133,7 +133,7 @@ impl Camera {
         }
     }
 
-    pub fn resolved_with_transform(&self, transform: Option<&Transform>) -> Self {
+    pub fn resolved_with_transform(&self, transform: Option<&GlobalTransform>) -> Self {
         let Some(transform) = transform else {
             return *self;
         };

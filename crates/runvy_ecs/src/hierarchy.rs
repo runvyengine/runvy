@@ -1,6 +1,6 @@
 use crate::Entity;
 
-#[derive(Debug, Default, Clone, Eq, PartialEq, Copy)]
+#[derive(Debug, Clone, Eq, PartialEq, Copy)]
 pub struct ChildOf(Entity);
 
 impl ChildOf {

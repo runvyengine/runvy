@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::components::{Camera, Transform};
+use crate::components::{Camera, GlobalTransform};
 use crate::resources::input::InputState;
 use crate::ui::UiNodeBuilder;
 use crate::ui::{
@@ -886,7 +886,7 @@ impl UiRenderer {
         &self,
         world_rect: crate::ui::UiRect,
         camera: &Camera,
-        transform: Option<&Transform>,
+        transform: Option<&GlobalTransform>,
     ) -> RenderUiRect {
         let vs = camera.orthographic_size;
         let mut wcx = (world_rect.x - vs.x * 0.5) + camera.position.x;
@@ -914,7 +914,7 @@ impl UiRenderer {
         &self,
         render_queue: &mut RenderQueue,
         camera: Option<&Camera>,
-        transform: Option<&Transform>,
+        transform: Option<&GlobalTransform>,
         order: i32,
     ) {
         let screen_of = |rect: crate::ui::UiRect| -> RenderUiRect {

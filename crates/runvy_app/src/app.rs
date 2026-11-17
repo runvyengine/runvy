@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use runvy_core::components::EMPTY_TILE;
 use runvy_core::components::{
-    BackgroundMode, Camera, MeshRenderer, Sorting, SpriteRenderer, Tilemap, Transform, UiRenderer,
-    WorldAtmosphere,
+    BackgroundMode, Camera, GlobalTransform, MeshRenderer, Sorting, SpriteRenderer, Tilemap,
+    UiRenderer, WorldAtmosphere,
 };
-use runvy_core::components::{ChildOf, EMPTY_TILE};
 use runvy_core::resources::input::{self, InputState};
 use runvy_core::resources::Time;
 use runvy_core::{glam, Console, Vec2};
@@ -94,14 +94,6 @@ impl<'window> App<'window> {
         }
     }
 
-    fn childof(&mut self) {
-        let Self {
-            ref world,
-            ref mut queue,
-            ..
-        } = self;
-    }
-
     fn render_ecs_sprites(&mut self, alpha: f32) {
         let Self {
             ref world,
@@ -112,7 +104,9 @@ impl<'window> App<'window> {
             .query::<R<Sorting>>()
             .map(|(e, s)| (e, s.order))
             .collect();
-        for (entity, (transform, sprite)) in world.query::<(R<Transform>, R<SpriteRenderer>)>() {
+        for (entity, (transform, sprite)) in
+            world.query::<(R<GlobalTransform>, R<SpriteRenderer>)>()
+        {
             if let Some(tex) = sprite.texture() {
                 let order = sort_orders.get(&entity).copied().unwrap_or(0);
                 queue.draw_sprite(
@@ -142,7 +136,7 @@ impl<'window> App<'window> {
 
         let Self { ref mut queue, .. } = self;
 
-        for (_entity, (transform, tm)) in self.world.query::<(R<Transform>, R<Tilemap>)>() {
+        for (_entity, (transform, tm)) in self.world.query::<(R<GlobalTransform>, R<Tilemap>)>() {
             let Some(atlas) = tm.atlas.as_ref() else {
                 continue;
             };
@@ -248,7 +242,7 @@ impl<'window> App<'window> {
         }
 
         let mut ui_with_transform: Vec<u64> = Vec::new();
-        for (entity, (ui, transform)) in self.world.query::<(R<UiRenderer>, R<Transform>)>() {
+        for (entity, (ui, transform)) in self.world.query::<(R<UiRenderer>, R<GlobalTransform>)>() {
             let order = sort_orders.get(&entity).copied().unwrap_or(0);
             ui.build_render_commands(&mut self.queue, camera_ref, Some(transform), order);
             ui_with_transform.push(entity);
@@ -272,7 +266,9 @@ impl<'window> App<'window> {
             .query::<R<Sorting>>()
             .map(|(e, s)| (e, s.order))
             .collect();
-        for (entity, (transform, renderer)) in world.query::<(R<Transform>, R<MeshRenderer>)>() {
+        for (entity, (transform, renderer)) in
+            world.query::<(R<GlobalTransform>, R<MeshRenderer>)>()
+        {
             let Some(handle) = &renderer.mesh else {
                 continue;
             };
@@ -313,7 +309,7 @@ impl<'window> App<'window> {
 
         let camera = self
             .world
-            .query::<(R<Camera>, R<Transform>)>()
+            .query::<(R<Camera>, R<GlobalTransform>)>()
             .next()
             .map(|(_, (c, t))| {
                 let mut resolved = *t;
@@ -481,7 +477,7 @@ impl<'window> ApplicationHandler for App<'window> {
                 let mut input_state = resources.delete::<InputState>();
                 {
                     input_state.camera = entities
-                        .query::<(runvy_ecs::R<Camera>, runvy_ecs::R<Transform>)>()
+                        .query::<(runvy_ecs::R<Camera>, runvy_ecs::R<GlobalTransform>)>()
                         .next()
                         .map(|(_, (c, t))| c.resolved_with_transform(Some(t)))
                         .or_else(|| {
@@ -494,7 +490,7 @@ impl<'window> ApplicationHandler for App<'window> {
 
                 resources.add(input_state);
 
-                for (_, transform) in entities.query_mut::<runvy_ecs::W<Transform>>() {
+                for (_, transform) in entities.query_mut::<runvy_ecs::W<GlobalTransform>>() {
                     transform.prepare_for_update();
                 }
 
@@ -513,10 +509,14 @@ impl<'window> ApplicationHandler for App<'window> {
 
             self.scheduler.run_start_if_requested(&mut self.world);
 
+            runvy_core::systems::hierarchy::propagate_transforms(&mut self.world);
+
             self.world.get_resource_mut::<InputState>().update_frame();
 
             self.accumulator -= BASE_TIMESTEP;
         }
+
+        runvy_core::systems::hierarchy::propagate_transforms(&mut self.world);
 
         self.interpolation_alpha = self.accumulator / BASE_TIMESTEP;
 

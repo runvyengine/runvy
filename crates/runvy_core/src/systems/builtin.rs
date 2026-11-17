@@ -2,9 +2,9 @@ use crate::audio::AudioEngine;
 use crate::collision2d::intersects_world;
 use crate::collision3d::intersects_world as intersects_world_3d;
 use crate::components::{
-    AudioListener, AudioSource, Collider2D, Collider3D, CursorInteractable, OnTriggerEnter2D,
-    OnTriggerEnter3D, OnTriggerExit2D, OnTriggerExit3D, OnTriggerStay2D, OnTriggerStay3D,
-    SpriteAnimator, SpriteRenderer, Timer, Transform, WorldCollider2D, WorldCollider3D,
+    AudioListener, AudioSource, Collider2D, Collider3D, CursorInteractable, GlobalTransform,
+    OnTriggerEnter2D, OnTriggerEnter3D, OnTriggerExit2D, OnTriggerExit3D, OnTriggerStay2D,
+    OnTriggerStay3D, SpriteAnimator, SpriteRenderer, Timer, WorldCollider2D, WorldCollider3D,
 };
 use crate::resources::event::EventBus;
 use crate::resources::input::InputState;
@@ -35,7 +35,7 @@ fn audio_engine() -> &'static Mutex<Option<AudioEngine>> {
 #[system(Update, "crate")]
 pub fn cursor_interaction(
     mut input: ResMut<InputState>,
-    q: QueryMut<(W<CursorInteractable>, R<Transform>)>,
+    q: QueryMut<(W<CursorInteractable>, R<GlobalTransform>)>,
 ) {
     let world_pos = match input.get_mouse_world_position() {
         Some(p) => p,
@@ -44,7 +44,7 @@ pub fn cursor_interaction(
     let mouse_down = input.is_mouse_button_just_pressed(MouseButton::Left);
 
     for (_, (interactable, transform)) in q {
-        interactable.is_hovered = interactable.contains_point(world_pos, transform.global_position);
+        interactable.is_hovered = interactable.contains_point(world_pos, transform.position);
         if mouse_down && interactable.is_hovered {
             if let Some(cb) = interactable.on_click_mut() {
                 if let Ok(f) = cb.get_mut() {
@@ -59,7 +59,7 @@ pub fn cursor_interaction(
 #[system(Update, "crate")]
 pub fn audio_system(
     sources: QueryMut<W<AudioSource>>,
-    listeners: Query<(R<AudioListener>, R<Transform>)>,
+    listeners: Query<(R<AudioListener>, R<GlobalTransform>)>,
 ) {
     let mut guard = audio_engine().lock().unwrap();
     let Some(engine) = guard.as_mut() else {
@@ -84,11 +84,7 @@ pub fn audio_system(
 
     for (_, (listener, transform)) in listeners {
         if listener.active {
-            engine.set_listener(
-                transform.global_position,
-                transform.global_rotation,
-                listener.volume,
-            );
+            engine.set_listener(transform.position, transform.rotation, listener.volume);
         }
     }
 
@@ -121,7 +117,7 @@ struct Collider2DSnapshot {
 
 #[system(Update, "crate")]
 pub fn collision_2d_system(
-    q: Query<(R<Transform>, R<Collider2D>)>,
+    q: Query<(R<GlobalTransform>, R<Collider2D>)>,
     mut tracker: ResMut<CollisionTracker2D>,
     mut bus: ResMut<EventBus>,
 ) {
@@ -204,7 +200,7 @@ struct Collider3DSnapshot {
 
 #[system(Update, "crate")]
 pub fn collision_3d_system(
-    q: Query<(R<Transform>, R<Collider3D>)>,
+    q: Query<(R<GlobalTransform>, R<Collider3D>)>,
     mut tracker: ResMut<CollisionTracker3D>,
     mut bus: ResMut<EventBus>,
 ) {

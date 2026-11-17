@@ -1135,8 +1135,6 @@ impl TransformAsset {
             position: Vec3::from_array(self.position),
             rotation: Quat::from_array(self.rotation),
             scale: Vec3::from_array(self.scale),
-            previous_position: Vec3::from_array(self.position),
-            previous_rotation: Quat::from_array(self.rotation),
         }
     }
 }

@@ -242,10 +242,12 @@ pub(super) fn component_icon_name(type_id: TypeId, kind: ComponentRuntimeKind) -
 
 pub(super) fn component_anchor_world(object: &Object, type_id: TypeId) -> Option<Vec3> {
     if type_id == TypeId::of::<Camera>() {
-        return object
-            .get_component::<Camera>()
-            .map(|camera| camera.resolved_with_transform(object.get_component::<Transform>()))
-            .map(|camera| camera.position);
+        return object.get_component::<Camera>().map(|camera| {
+            let global = object
+                .get_component::<Transform>()
+                .map(GlobalTransform::from_local);
+            camera.resolved_with_transform(global.as_ref()).position
+        });
     }
 
     object

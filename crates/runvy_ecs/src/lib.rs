@@ -2,11 +2,11 @@ mod archetype;
 mod blob_vec;
 mod commands;
 mod entity;
+mod hierarchy;
 mod param;
 mod query;
 mod system;
 mod world;
-mod hierarchy;
 
 pub use archetype::{Archetype, ArchetypeId, BlobColumn, Bundle};
 pub use blob_vec::{BlobVec, ComponentInfo};
@@ -17,5 +17,5 @@ pub use system::{Scheduler, Stage, System, SystemDescriptor, SystemStage};
 pub use world::{EntityStore, ResourceStore, World};
 
 pub use commands::{commands, CommandQueue, Commands};
-pub use inventory;
 pub use hierarchy::{ChildOf, Children, HierarchyError};
+pub use inventory;
